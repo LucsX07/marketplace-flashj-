@@ -1,19 +1,28 @@
-import Link from "next/link";
+"use client";
+
+import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
 
 export default function ProdutoCard({ produto }) {
+  const { adicionarItem } = useCarrinho();
+
   return (
-    <Link
-      href={`/produto/${produto.id}`}
-      className="block rounded-lg border border-black/10 p-4 transition hover:shadow-md"
-    >
+    <div className="rounded-lg border border-black/10 p-4">
       <h3 className="font-semibold">{produto.nome}</h3>
       <p className="text-sm text-black/60">{produto.descricao}</p>
-      <p className="mt-2 font-medium">
-        {produto.preco.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}
-      </p>
-    </Link>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="font-medium">
+          {produto.preco.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
+        </span>
+        <button
+          onClick={() => adicionarItem(produto)}
+          className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-black/80"
+        >
+          Adicionar
+        </button>
+      </div>
+    </div>
   );
 }
