@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO } from "@/lib/ui";
 
@@ -10,6 +10,19 @@ import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO } from "@/lib/ui";
 export default function SeletorDeOpcoesProduto({ produto, aoConfirmar, aoFechar }) {
   const precoBase = produto.preco_promocional ?? produto.preco;
   const [selecoes, setSelecoes] = useState({});
+  const botaoFecharRef = useRef(null);
+
+  // Foco vai pro botão de fechar assim que o modal abre (quem navega só
+  // por teclado não fica "preso" no botão que abriu o modal), e Esc fecha.
+  useEffect(() => {
+    botaoFecharRef.current?.focus();
+
+    function lidarComTecla(evento) {
+      if (evento.key === "Escape") aoFechar();
+    }
+    document.addEventListener("keydown", lidarComTecla);
+    return () => document.removeEventListener("keydown", lidarComTecla);
+  }, [aoFechar]);
 
   function selecionarUnica(opcaoId, valorId) {
     setSelecoes((atual) => ({ ...atual, [opcaoId]: valorId }));
@@ -57,17 +70,23 @@ export default function SeletorDeOpcoesProduto({ produto, aoConfirmar, aoFechar 
       onClick={aoFechar}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-seletor-opcoes"
         className="animate-entrada max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-md border border-line bg-surface p-5 sm:rounded-md"
         onClick={(evento) => evento.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-display font-bold text-ink">{produto.nome}</h2>
+            <h2 id="titulo-seletor-opcoes" className="font-display font-bold text-ink">
+              {produto.nome}
+            </h2>
             {produto.descricao && (
               <p className="mt-1 text-sm text-ink-muted">{produto.descricao}</p>
             )}
           </div>
           <button
+            ref={botaoFecharRef}
             type="button"
             onClick={aoFechar}
             aria-label="Fechar"

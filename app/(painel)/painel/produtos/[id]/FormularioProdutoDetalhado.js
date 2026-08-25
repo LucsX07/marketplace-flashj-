@@ -151,7 +151,7 @@ function SecaoBase({ produto }) {
         <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} text-sm`}>
           {pendente ? "Salvando..." : "Salvar alterações"}
         </button>
-        {confirmado && <span className="animate-entrada text-sm text-brand">Salvo ✓</span>}
+        {confirmado && <span aria-live="polite" className="animate-entrada text-sm text-brand">Salvo ✓</span>}
       </div>
     </form>
   );
@@ -184,7 +184,7 @@ function FormularioAtributo({ produtoId, sugestoes }) {
         <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
           {pendente ? "Adicionando..." : "Adicionar"}
         </button>
-        {confirmado && <span className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
+        {confirmado && <span aria-live="polite" className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
       </div>
       {sugestoes.length > 0 && (
         <div className="flex w-full flex-wrap items-center gap-2">
@@ -278,7 +278,7 @@ function FormularioValorOpcao({ produtoId, opcaoId }) {
         >
           {pendente ? "Adicionando..." : "+ adicionar valor"}
         </button>
-        {confirmado && <span className="animate-entrada text-sm text-brand">✓</span>}
+        {confirmado && <span aria-live="polite" className="animate-entrada text-sm text-brand">✓</span>}
       </div>
       {estado?.erro && <p className="animate-entrada w-full text-sm text-warn">{estado.erro}</p>}
     </form>
@@ -374,7 +374,7 @@ function FormularioOpcao({ produtoId, sugestoes }) {
         <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
           {pendente ? "Adicionando..." : "Adicionar opção"}
         </button>
-        {confirmado && <span className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
+        {confirmado && <span aria-live="polite" className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
       </div>
       {sugestoes.length > 0 && (
         <div className="flex w-full flex-wrap items-center gap-2">
