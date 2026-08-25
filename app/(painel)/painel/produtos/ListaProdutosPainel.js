@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useTransition } from "react";
 import { criarProduto, alternarDisponibilidade } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
@@ -66,13 +67,21 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
                 </span>
                 <span className="ml-2 text-ink-muted">{formatarPreco(produto.preco)}</span>
               </div>
-              <button
-                disabled={alternandoDisponibilidade}
-                onClick={() => alternar(produto.id, produto.disponivel)}
-                className="text-sm font-medium text-brand transition-transform duration-150 hover:text-brand-hover active:scale-[0.97] disabled:opacity-60"
-              >
-                {produto.disponivel ? "Marcar indisponível" : "Marcar disponível"}
-              </button>
+              <div className="flex items-center gap-4">
+                <Link
+                  href={`/painel/produtos/${produto.id}`}
+                  className="text-sm font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
+                >
+                  Editar
+                </Link>
+                <button
+                  disabled={alternandoDisponibilidade}
+                  onClick={() => alternar(produto.id, produto.disponivel)}
+                  className="text-sm font-medium text-brand transition-transform duration-150 hover:text-brand-hover active:scale-[0.97] disabled:opacity-60"
+                >
+                  {produto.disponivel ? "Marcar indisponível" : "Marcar disponível"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
