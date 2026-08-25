@@ -9,6 +9,7 @@ create type tipo_usuario as enum ('consumidor', 'comerciante', 'administrador');
 create type status_pedido as enum ('pendente', 'aceito', 'recusado', 'em_preparo', 'pronto', 'concluido');
 create type metodo_pagamento as enum ('retirada', 'stripe');
 create type status_pagamento as enum ('pendente', 'aprovado', 'recusado', 'estornado');
+create type tipo_opcao_produto as enum ('unica', 'multipla');
 
 -- usuarios: dados de negócio ligados ao login do Supabase (auth.users) --
 create table public.usuarios (
@@ -46,8 +47,42 @@ create table public.produtos (
   nome text not null,
   descricao text,
   preco numeric(10, 2) not null check (preco >= 0),
+  preco_promocional numeric(10, 2) check (preco_promocional is null or preco_promocional >= 0),
+  em_destaque boolean not null default false,
+  categoria_produto text,
+  imagem_url text,
   disponivel boolean not null default true,
   criado_em timestamptz not null default now()
+);
+
+-- produto_atributos: informação livre que não afeta preço nem é escolhida
+-- pelo consumidor (ex.: marca, peso, voltagem) — tanto sugerida por
+-- categoria quanto digitada do zero pelo comerciante são a mesma linha. ----
+create table public.produto_atributos (
+  id uuid primary key default gen_random_uuid(),
+  produto_id uuid not null references public.produtos (id) on delete cascade,
+  nome text not null,
+  valor text not null,
+  criado_em timestamptz not null default now()
+);
+
+-- produto_opcoes / produto_opcao_valores: o que o consumidor ESCOLHE antes
+-- de adicionar ao carrinho, podendo alterar o preço (ex.: Tamanho, Adicionais). --
+create table public.produto_opcoes (
+  id uuid primary key default gen_random_uuid(),
+  produto_id uuid not null references public.produtos (id) on delete cascade,
+  nome text not null,
+  tipo tipo_opcao_produto not null default 'unica',
+  obrigatoria boolean not null default false,
+  ordem integer not null default 0
+);
+
+create table public.produto_opcao_valores (
+  id uuid primary key default gen_random_uuid(),
+  opcao_id uuid not null references public.produto_opcoes (id) on delete cascade,
+  nome text not null,
+  ajuste_preco numeric(10, 2) not null default 0,
+  ordem integer not null default 0
 );
 
 -- pedidos ---------------------------------------------------------------------
@@ -69,6 +104,17 @@ create table public.itens_pedido (
   quantidade integer not null check (quantidade > 0),
   preco_unitario numeric(10, 2) not null check (preco_unitario >= 0),
   subtotal numeric(10, 2) not null check (subtotal >= 0)
+);
+
+-- item_pedido_opcoes: fotografia das opções escolhidas naquele item —
+-- mesmo raciocínio de itens_pedido.preco_unitario: se a opção do produto
+-- mudar ou for apagada depois, o pedido antigo não pode mudar de descrição. --
+create table public.item_pedido_opcoes (
+  id uuid primary key default gen_random_uuid(),
+  item_pedido_id uuid not null references public.itens_pedido (id) on delete cascade,
+  nome_opcao text not null,
+  nome_valor text not null,
+  ajuste_preco numeric(10, 2) not null default 0
 );
 
 -- pagamentos: hoje só "retirada"; gateway_id/gateway_payload ficam nulos
@@ -131,8 +177,12 @@ alter table public.usuarios enable row level security;
 alter table public.categorias enable row level security;
 alter table public.estabelecimentos enable row level security;
 alter table public.produtos enable row level security;
+alter table public.produto_atributos enable row level security;
+alter table public.produto_opcoes enable row level security;
+alter table public.produto_opcao_valores enable row level security;
 alter table public.pedidos enable row level security;
 alter table public.itens_pedido enable row level security;
+alter table public.item_pedido_opcoes enable row level security;
 alter table public.pagamentos enable row level security;
 
 -- Função auxiliar: tipo do usuário logado (security definer evita
@@ -177,6 +227,46 @@ create policy "produtos: dono gerencia" on public.produtos
     )
   );
 
+-- produto_atributos: leitura pública; dono do estabelecimento gerencia -------
+create policy "produto_atributos: leitura publica" on public.produto_atributos
+  for select using (true);
+create policy "produto_atributos: dono gerencia" on public.produto_atributos
+  for all using (
+    exists (
+      select 1 from public.produtos p
+      join public.estabelecimentos e on e.id = p.estabelecimento_id
+      where p.id = produto_id
+        and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
+    )
+  );
+
+-- produto_opcoes: leitura pública; dono do estabelecimento gerencia ----------
+create policy "produto_opcoes: leitura publica" on public.produto_opcoes
+  for select using (true);
+create policy "produto_opcoes: dono gerencia" on public.produto_opcoes
+  for all using (
+    exists (
+      select 1 from public.produtos p
+      join public.estabelecimentos e on e.id = p.estabelecimento_id
+      where p.id = produto_id
+        and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
+    )
+  );
+
+-- produto_opcao_valores: leitura pública; dono do estabelecimento gerencia ---
+create policy "produto_opcao_valores: leitura publica" on public.produto_opcao_valores
+  for select using (true);
+create policy "produto_opcao_valores: dono gerencia" on public.produto_opcao_valores
+  for all using (
+    exists (
+      select 1 from public.produto_opcoes o
+      join public.produtos p on p.id = o.produto_id
+      join public.estabelecimentos e on e.id = p.estabelecimento_id
+      where o.id = opcao_id
+        and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
+    )
+  );
+
 -- pedidos: consumidor vê/cria os seus; comerciante vê/atualiza os da loja ----
 create policy "pedidos: dono do pedido ou da loja ve" on public.pedidos
   for select using (
@@ -208,6 +298,29 @@ create policy "itens_pedido: segue o pedido" on public.itens_pedido
 create policy "itens_pedido: consumidor cria junto do pedido" on public.itens_pedido
   for insert with check (
     exists (select 1 from public.pedidos p where p.id = pedido_id and p.consumidor_id = auth.uid())
+  );
+
+-- item_pedido_opcoes: segue a visibilidade do item_pedido ao qual pertence ---
+create policy "item_pedido_opcoes: segue o pedido" on public.item_pedido_opcoes
+  for select using (
+    exists (
+      select 1 from public.itens_pedido ip
+      join public.pedidos pe on pe.id = ip.pedido_id
+      where ip.id = item_pedido_id
+        and (
+          pe.consumidor_id = auth.uid()
+          or exists (select 1 from public.estabelecimentos e where e.id = pe.estabelecimento_id and e.dono_id = auth.uid())
+          or public.meu_tipo() = 'administrador'
+        )
+    )
+  );
+create policy "item_pedido_opcoes: consumidor cria junto do pedido" on public.item_pedido_opcoes
+  for insert with check (
+    exists (
+      select 1 from public.itens_pedido ip
+      join public.pedidos pe on pe.id = ip.pedido_id
+      where ip.id = item_pedido_id and pe.consumidor_id = auth.uid()
+    )
   );
 
 -- pagamentos: mesma visibilidade do pedido. gateway_id/gateway_payload
