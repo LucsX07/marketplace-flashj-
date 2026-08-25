@@ -31,24 +31,26 @@ export default function CheckoutForm() {
 
   if (itens.length === 0) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="text-2xl font-bold">Checkout</h1>
-        <p className="mt-4 text-black/60">Seu carrinho está vazio.</p>
+      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
+          Checkout
+        </h1>
+        <p className="mt-4 text-ink-muted">Seu carrinho está vazio.</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-bold">Checkout</h1>
-      <p className="mt-1 text-black/60">
+    <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">Checkout</h1>
+      <p className="mt-1 text-ink-muted">
         Retirada no estabelecimento. Pagamento é feito na hora da retirada — o
         pagamento online chega numa próxima etapa.
       </p>
 
-      <ul className="mt-6 divide-y divide-black/10">
+      <ul className="mt-6 divide-y divide-line">
         {itens.map((item) => (
-          <li key={item.produto_id} className="flex justify-between py-2 text-sm">
+          <li key={item.produto_id} className="flex justify-between py-2 text-sm text-ink">
             <span>
               {item.quantidade}x {item.nome}
             </span>
@@ -57,17 +59,17 @@ export default function CheckoutForm() {
         ))}
       </ul>
 
-      <div className="mt-4 flex items-center justify-between border-t border-black/10 pt-4">
-        <span className="font-semibold">Total</span>
-        <span className="font-semibold">{formatarPreco(total)}</span>
+      <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
+        <span className="font-semibold text-ink">Total</span>
+        <span className="font-semibold text-ink">{formatarPreco(total)}</span>
       </div>
 
-      {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
+      {erro && <p className="mt-4 text-sm text-warn">{erro}</p>}
 
       <button
         onClick={finalizarPedido}
         disabled={pendente}
-        className="mt-6 w-full rounded-md bg-black px-4 py-2 text-white hover:bg-black/80 disabled:opacity-60"
+        className="corner-cut mt-6 w-full rounded-sm bg-brand px-4 py-2 font-semibold text-on-brand hover:bg-brand-hover disabled:opacity-60"
       >
         {pendente ? "Confirmando..." : "Confirmar pedido"}
       </button>

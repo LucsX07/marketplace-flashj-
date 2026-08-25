@@ -7,14 +7,14 @@ export default function ProdutoCard({ produto }) {
   const { adicionarItem } = useCarrinho();
 
   return (
-    <div className="rounded-lg border border-black/10 p-4">
-      <h3 className="font-semibold">{produto.nome}</h3>
-      <p className="text-sm text-black/60">{produto.descricao}</p>
+    <div className="rounded-md border border-line bg-surface p-4">
+      <h3 className="font-display font-bold text-ink">{produto.nome}</h3>
+      <p className="text-sm text-ink-muted">{produto.descricao}</p>
       <div className="mt-3 flex items-center justify-between">
-        <span className="font-medium">{formatarPreco(produto.preco)}</span>
+        <span className="font-medium text-ink">{formatarPreco(produto.preco)}</span>
         <button
           onClick={() => adicionarItem(produto)}
-          className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-black/80"
+          className="corner-cut rounded-sm bg-brand px-3 py-1.5 text-sm font-semibold text-on-brand hover:bg-brand-hover"
         >
           Adicionar
         </button>

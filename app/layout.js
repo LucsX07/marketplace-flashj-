@@ -1,18 +1,21 @@
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Public_Sans } from "next/font/google";
 import { CarrinhoProvider } from "@/components/carrinho/CarrinhoContext";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { sair } from "@/lib/actions/auth";
+import BrandMark from "@/components/BrandMark";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata = {
@@ -39,28 +42,40 @@ export default async function RootLayout({ children }) {
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${publicSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
         <CarrinhoProvider>
-          <header className="border-b border-black/10">
-            <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-              <Link href="/" className="font-bold">
-                FlashJá
+          <header className="border-b border-line">
+            <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+              <Link href="/" className="flex items-center gap-2">
+                <BrandMark className="h-6 w-6 text-brand" />
+                <span className="font-display text-lg font-extrabold tracking-tight">
+                  Flash<span className="text-brand">Já</span>
+                </span>
               </Link>
-              <div className="flex items-center gap-4 text-sm">
-                <Link href="/carrinho">Carrinho</Link>
+              <div className="flex items-center gap-5 text-sm font-medium">
+                <Link href="/carrinho" className="text-ink-muted hover:text-ink">
+                  Carrinho
+                </Link>
                 {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
-                  <Link href="/painel">Painel do comerciante</Link>
+                  <Link href="/painel" className="text-ink-muted hover:text-ink">
+                    Painel
+                  </Link>
                 )}
                 {usuario ? (
                   <form action={sair}>
-                    <button type="submit" className="underline">
+                    <button type="submit" className="text-ink-muted hover:text-ink">
                       Sair ({usuario.nome})
                     </button>
                   </form>
                 ) : (
-                  <Link href="/entrar">Entrar</Link>
+                  <Link
+                    href="/entrar"
+                    className="rounded-md bg-brand px-3 py-1.5 text-on-brand hover:bg-brand-hover"
+                  >
+                    Entrar
+                  </Link>
                 )}
               </div>
             </nav>
