@@ -5,6 +5,7 @@ import { useActionState, useTransition } from "react";
 import { criarProduto, alternarDisponibilidade } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, CAMPO } from "@/lib/ui";
+import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
 const estadoInicial = { erro: null };
 
@@ -57,17 +58,45 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
           {produtosIniciais.map((produto) => (
             <li
               key={produto.id}
-              className="animate-entrada flex items-center justify-between py-3"
+              className="animate-entrada flex items-center justify-between gap-3 py-3"
             >
-              <div>
-                <span
-                  className={`transition-colors duration-300 ${produto.disponivel ? "text-ink" : "text-ink-faint line-through"}`}
-                >
-                  {produto.nome}
-                </span>
-                <span className="ml-2 text-ink-muted">{formatarPreco(produto.preco)}</span>
+              <div className="flex min-w-0 items-center gap-3">
+                <ImagemComPlaceholder
+                  src={produto.imagem_url}
+                  alt=""
+                  className="h-12 w-12 shrink-0 rounded-md"
+                />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span
+                      className={`transition-colors duration-300 ${produto.disponivel ? "text-ink" : "text-ink-faint line-through"}`}
+                    >
+                      {produto.nome}
+                    </span>
+                    {produto.em_destaque && (
+                      <span className="rounded-full bg-brand-tint px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                        Destaque
+                      </span>
+                    )}
+                    {produto.preco_promocional && (
+                      <span className="rounded-full bg-warn-tint px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warn">
+                        Promoção
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-ink-muted">
+                    {produto.preco_promocional ? (
+                      <>
+                        <span className="mr-1 line-through">{formatarPreco(produto.preco)}</span>
+                        {formatarPreco(produto.preco_promocional)}
+                      </>
+                    ) : (
+                      formatarPreco(produto.preco)
+                    )}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex shrink-0 items-center gap-4">
                 <Link
                   href={`/painel/produtos/${produto.id}`}
                   className="text-sm font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
