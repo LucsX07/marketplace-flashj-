@@ -2,10 +2,14 @@ import Link from "next/link";
 import { Archivo, Public_Sans } from "next/font/google";
 import { CarrinhoProvider } from "@/components/carrinho/CarrinhoContext";
 import { criarClienteServidor } from "@/lib/supabase/server";
-import { sair } from "@/lib/actions/auth";
 import BrandMark from "@/components/BrandMark";
 import BarraInferior from "@/components/BarraInferior";
 import "./globals.css";
+
+// Aplica o tema escolhido manualmente (salvo em localStorage) antes da
+// primeira pintura da página — sem isso, a tela pisca no tema errado
+// por uma fração de segundo até o React hidratar.
+const SCRIPT_TEMA = `(function(){try{var t=localStorage.getItem("flashja-tema");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();`;
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -44,7 +48,11 @@ export default async function RootLayout({ children }) {
     <html
       lang="pt-BR"
       className={`${archivo.variable} ${publicSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="flex min-h-full flex-col bg-bg pb-14 font-sans text-ink sm:pb-0">
         <CarrinhoProvider>
           <header className="border-b border-line">
@@ -79,14 +87,12 @@ export default async function RootLayout({ children }) {
                   </Link>
                 )}
                 {usuario ? (
-                  <form action={sair}>
-                    <button
-                      type="submit"
-                      className="text-ink-muted transition-colors duration-150 hover:text-ink active:scale-[0.97]"
-                    >
-                      Sair ({usuario.nome})
-                    </button>
-                  </form>
+                  <Link
+                    href="/perfil"
+                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                  >
+                    {usuario.nome}
+                  </Link>
                 ) : (
                   <Link
                     href="/entrar"

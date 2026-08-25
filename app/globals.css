@@ -19,8 +19,10 @@
   --warn-tint: #f7e6e3;
 }
 
+/* Escuro automático (segue o sistema) — só entra se ninguém escolheu
+   "claro" manualmente no seletor de tema. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #101312;
     --surface: #171b19;
     --surface-2: #1f2422;
@@ -38,6 +40,26 @@
     --warn: #e2604a;
     --warn-tint: #351f1b;
   }
+}
+
+/* Escuro escolhido manualmente — vale mesmo com o sistema em claro. */
+:root[data-theme="dark"] {
+  --bg: #101312;
+  --surface: #171b19;
+  --surface-2: #1f2422;
+  --ink: #f3f4f1;
+  --ink-muted: #9ba39d;
+  --ink-faint: #6c746f;
+  --line: #2a302d;
+  --line-strong: #3b433f;
+
+  --brand: #16b85c;
+  --brand-hover: #22cc6a;
+  --brand-tint: #10301f;
+  --on-brand: #06170e;
+
+  --warn: #e2604a;
+  --warn-tint: #351f1b;
 }
 
 @theme inline {

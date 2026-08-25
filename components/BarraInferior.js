@@ -32,13 +32,6 @@ const ICONE_CARRINHO = (
   </svg>
 );
 
-const ICONE_PEDIDOS = (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="5" y="4" width="14" height="17" rx="1.5" />
-    <path d="M8 9h8M8 13h8M8 17h5" strokeLinecap="round" />
-  </svg>
-);
-
 const ICONE_PAINEL = (
   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 10 12 3l8 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -68,10 +61,10 @@ export default function BarraInferior({ usuario }) {
       />
       {usuario ? (
         <Item
-          href="/pedidos"
-          rotulo="Pedidos"
-          ativo={pathname.startsWith("/pedidos")}
-          icone={ICONE_PEDIDOS}
+          href="/perfil"
+          rotulo="Perfil"
+          ativo={pathname.startsWith("/perfil")}
+          icone={ICONE_ENTRAR}
         />
       ) : (
         <Item href="/entrar" rotulo="Entrar" ativo={pathname === "/entrar"} icone={ICONE_ENTRAR} />
