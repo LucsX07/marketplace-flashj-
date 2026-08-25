@@ -1,20 +1,9 @@
 import { cookies } from "next/headers";
-import EstabelecimentoCard from "@/components/EstabelecimentoCard";
 import PortaDeEntrada from "@/components/PortaDeEntrada";
+import VitrineCidade from "@/components/VitrineCidade";
 import { listarEstabelecimentos } from "@/lib/estabelecimentos";
+import { listarProdutosEmDestaque } from "@/lib/produtos";
 import { limparCidade } from "@/lib/actions/cidade";
-
-function agruparPorCategoria(estabelecimentos) {
-  const grupos = new Map();
-  for (const estabelecimento of estabelecimentos) {
-    const nomeCategoria = estabelecimento.categorias?.nome || "Outros";
-    if (!grupos.has(nomeCategoria)) {
-      grupos.set(nomeCategoria, []);
-    }
-    grupos.get(nomeCategoria).push(estabelecimento);
-  }
-  return grupos;
-}
 
 export default async function PaginaInicial() {
   const cookieStore = await cookies();
@@ -24,8 +13,10 @@ export default async function PaginaInicial() {
     return <PortaDeEntrada />;
   }
 
-  const estabelecimentos = await listarEstabelecimentos(cidade);
-  const grupos = agruparPorCategoria(estabelecimentos);
+  const [estabelecimentos, destaques] = await Promise.all([
+    listarEstabelecimentos(cidade),
+    listarProdutosEmDestaque(cidade),
+  ]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
@@ -47,23 +38,7 @@ export default async function PaginaInicial() {
       </div>
       <span className="mt-3 block h-1 w-12 bg-brand" />
 
-      {estabelecimentos.length === 0 ? (
-        <div className="animate-entrada relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center">
-          <div className="grid-texture pointer-events-none absolute inset-0" />
-          <p className="relative text-ink-muted">Nenhum estabelecimento cadastrado ainda.</p>
-        </div>
-      ) : (
-        [...grupos.entries()].map(([nomeCategoria, itens]) => (
-          <section key={nomeCategoria} className="mt-10">
-            <h2 className="font-display text-lg font-bold text-ink">{nomeCategoria}</h2>
-            <div className="stagger mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {itens.map((estabelecimento) => (
-                <EstabelecimentoCard key={estabelecimento.id} estabelecimento={estabelecimento} />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
+      <VitrineCidade estabelecimentos={estabelecimentos} destaques={destaques} />
     </main>
   );
 }

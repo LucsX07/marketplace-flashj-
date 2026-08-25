@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ProdutoCard from "@/components/ProdutoCard";
+import GradeProdutosPorCategoria from "@/components/GradeProdutosPorCategoria";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 import { buscarEstabelecimentoPorId } from "@/lib/estabelecimentos";
 import { buscarProdutosPorEstabelecimento } from "@/lib/produtos";
@@ -45,17 +45,7 @@ export default async function PaginaEstabelecimento({ params }) {
         </h1>
         <p className="mt-1 text-ink-muted">{estabelecimento.descricao}</p>
 
-        {produtos.length === 0 ? (
-          <p className="mt-8 text-ink-muted">
-            Este estabelecimento ainda não adicionou produtos.
-          </p>
-        ) : (
-          <div className="stagger mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {produtos.map((produto) => (
-              <ProdutoCard key={produto.id} produto={produto} />
-            ))}
-          </div>
-        )}
+        <GradeProdutosPorCategoria produtos={produtos} />
       </div>
     </main>
   );
