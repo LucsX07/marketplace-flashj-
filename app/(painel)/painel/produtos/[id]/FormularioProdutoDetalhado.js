@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useTransition } from "react";
+import { useActionState, useEffect, useRef, useTransition } from "react";
 import {
   atualizarProduto,
   criarAtributo,
@@ -14,6 +14,17 @@ import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO, CAMPO, CARTAO } from "@/lib/ui";
 
 const estadoInicial = { erro: null };
+
+// Depois de um envio com sucesso, limpa os campos (não-controlados) do
+// formulário — sem isso o texto digitado fica ali parado, parecendo que
+// nada aconteceu. Só mexe no DOM (form.reset()), não é estado do React.
+function useLimparAoSalvar(estado, formRef) {
+  useEffect(() => {
+    if (estado?.sucesso) {
+      formRef.current?.reset();
+    }
+  }, [estado, formRef]);
+}
 
 function Chip({ texto, onClick }) {
   return (
@@ -43,6 +54,7 @@ function BotaoRemover({ acao, pendente }) {
 function SecaoBase({ produto }) {
   const acao = atualizarProduto.bind(null, produto.id);
   const [estado, formAction, pendente] = useActionState(acao, estadoInicial);
+  const confirmado = Boolean(estado?.sucesso) && !pendente;
 
   return (
     <form action={formAction} className={`${CARTAO} animate-entrada mt-6 p-4`}>
@@ -116,9 +128,12 @@ function SecaoBase({ produto }) {
 
       {estado?.erro && <p className="animate-entrada mt-2 text-sm text-warn">{estado.erro}</p>}
 
-      <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} mt-4 text-sm`}>
-        {pendente ? "Salvando..." : "Salvar alterações"}
-      </button>
+      <div className="mt-4 flex items-center gap-3">
+        <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} text-sm`}>
+          {pendente ? "Salvando..." : "Salvar alterações"}
+        </button>
+        {confirmado && <span className="animate-entrada text-sm text-brand">Salvo ✓</span>}
+      </div>
     </form>
   );
 }
@@ -126,29 +141,42 @@ function SecaoBase({ produto }) {
 function FormularioAtributo({ produtoId, sugestoes }) {
   const acao = criarAtributo.bind(null, produtoId);
   const [estado, formAction, pendente] = useActionState(acao, estadoInicial);
+  const confirmado = Boolean(estado?.sucesso) && !pendente;
+  const formRef = useRef(null);
+  useLimparAoSalvar(estado, formRef);
   const nomeRef = useRef(null);
+  const valorRef = useRef(null);
 
   return (
-    <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
-      <div>
+    <form
+      ref={formRef}
+      action={formAction}
+      className="mt-4 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-end"
+    >
+      <div className="flex-1">
         <label className="block text-sm font-medium text-ink">Nome</label>
         <input ref={nomeRef} name="nome" required placeholder="Marca" className={CAMPO} />
       </div>
-      <div>
+      <div className="flex-1">
         <label className="block text-sm font-medium text-ink">Valor</label>
-        <input name="valor" required placeholder="Marca X" className={CAMPO} />
+        <input ref={valorRef} name="valor" required placeholder="Marca X" className={CAMPO} />
       </div>
-      <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
-        {pendente ? "Adicionando..." : "Adicionar atributo"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
+          {pendente ? "Adicionando..." : "Adicionar"}
+        </button>
+        {confirmado && <span className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
+      </div>
       {sugestoes.length > 0 && (
-        <div className="flex w-full flex-wrap gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2">
+          <span className="text-xs text-ink-faint">Sugestões:</span>
           {sugestoes.map((sugestao) => (
             <Chip
               key={sugestao}
               texto={sugestao}
               onClick={() => {
                 if (nomeRef.current) nomeRef.current.value = sugestao;
+                valorRef.current?.focus();
               }}
             />
           ))}
@@ -178,7 +206,10 @@ function SecaoAtributos({ produto, sugestoes }) {
       {produto.produto_atributos?.length > 0 && (
         <ul className="stagger mt-3 divide-y divide-line">
           {produto.produto_atributos.map((atributo) => (
-            <li key={atributo.id} className="animate-entrada flex items-center justify-between py-2">
+            <li
+              key={atributo.id}
+              className="animate-entrada flex items-center justify-between py-2"
+            >
               <span className="text-sm text-ink">
                 <span className="font-medium">{atributo.nome}:</span> {atributo.valor}
               </span>
@@ -196,20 +227,40 @@ function SecaoAtributos({ produto, sugestoes }) {
 function FormularioValorOpcao({ produtoId, opcaoId }) {
   const acao = criarValorOpcao.bind(null, produtoId, opcaoId);
   const [estado, formAction, pendente] = useActionState(acao, estadoInicial);
+  const confirmado = Boolean(estado?.sucesso) && !pendente;
+  const formRef = useRef(null);
+  useLimparAoSalvar(estado, formRef);
 
   return (
-    <form action={formAction} className="mt-2 flex flex-wrap items-end gap-2">
-      <input name="nome" required placeholder="Grande" className={`${CAMPO} w-32`} />
-      <input
-        name="ajuste_preco"
-        type="number"
-        step="0.01"
-        placeholder="+0.00"
-        className={`${CAMPO} w-24`}
-      />
-      <button type="submit" disabled={pendente} className="text-sm font-medium text-brand hover:text-brand-hover disabled:opacity-60">
-        {pendente ? "Adicionando..." : "+ valor"}
-      </button>
+    <form
+      ref={formRef}
+      action={formAction}
+      className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end"
+    >
+      <div className="flex-1">
+        <label className="block text-xs font-medium text-ink-muted">Valor</label>
+        <input name="nome" required placeholder="Grande" className={`${CAMPO} text-sm`} />
+      </div>
+      <div className="sm:w-32">
+        <label className="block text-xs font-medium text-ink-muted">Ajuste de preço (R$)</label>
+        <input
+          name="ajuste_preco"
+          type="number"
+          step="0.01"
+          placeholder="0,00"
+          className={`${CAMPO} text-sm`}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={pendente}
+          className="text-sm font-medium text-brand transition-colors duration-150 hover:text-brand-hover disabled:opacity-60"
+        >
+          {pendente ? "Adicionando..." : "+ adicionar valor"}
+        </button>
+        {confirmado && <span className="animate-entrada text-sm text-brand">✓</span>}
+      </div>
       {estado?.erro && <p className="animate-entrada w-full text-sm text-warn">{estado.erro}</p>}
     </form>
   );
@@ -232,7 +283,7 @@ function GrupoOpcao({ produtoId, opcao }) {
 
   return (
     <div className="rounded-md border border-line p-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-ink">
           {opcao.nome}{" "}
           <span className="text-ink-faint">
@@ -270,15 +321,22 @@ function GrupoOpcao({ produtoId, opcao }) {
 function FormularioOpcao({ produtoId, sugestoes }) {
   const acao = criarOpcao.bind(null, produtoId);
   const [estado, formAction, pendente] = useActionState(acao, estadoInicial);
+  const confirmado = Boolean(estado?.sucesso) && !pendente;
+  const formRef = useRef(null);
+  useLimparAoSalvar(estado, formRef);
   const nomeRef = useRef(null);
 
   return (
-    <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
-      <div>
+    <form
+      ref={formRef}
+      action={formAction}
+      className="mt-4 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-end sm:flex-wrap"
+    >
+      <div className="flex-1">
         <label className="block text-sm font-medium text-ink">Nome</label>
         <input ref={nomeRef} name="nome" required placeholder="Tamanho" className={CAMPO} />
       </div>
-      <div>
+      <div className="sm:w-44">
         <label className="block text-sm font-medium text-ink">Tipo</label>
         <select name="tipo" className={CAMPO} defaultValue="unica">
           <option value="unica">Escolha única</option>
@@ -286,14 +344,22 @@ function FormularioOpcao({ produtoId, sugestoes }) {
         </select>
       </div>
       <label className="flex items-center gap-2 pb-2 text-sm text-ink">
-        <input name="obrigatoria" type="checkbox" className="h-4 w-4 rounded border-line accent-brand" />
+        <input
+          name="obrigatoria"
+          type="checkbox"
+          className="h-4 w-4 rounded border-line accent-brand"
+        />
         Obrigatória
       </label>
-      <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
-        {pendente ? "Adicionando..." : "Adicionar opção"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={pendente} className={`${BOTAO_SECUNDARIO} text-sm`}>
+          {pendente ? "Adicionando..." : "Adicionar opção"}
+        </button>
+        {confirmado && <span className="animate-entrada text-sm text-brand">Adicionado ✓</span>}
+      </div>
       {sugestoes.length > 0 && (
-        <div className="flex w-full flex-wrap gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2">
+          <span className="text-xs text-ink-faint">Sugestões:</span>
           {sugestoes.map((sugestao) => (
             <Chip
               key={sugestao}
