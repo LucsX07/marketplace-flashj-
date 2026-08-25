@@ -9,9 +9,12 @@ import {
   removerOpcao,
   criarValorOpcao,
   removerValorOpcao,
+  atualizarImagemProduto,
+  removerImagemProduto,
 } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO, CAMPO, CARTAO } from "@/lib/ui";
+import UploadImagem from "@/components/UploadImagem";
 
 const estadoInicial = { erro: null };
 
@@ -48,6 +51,22 @@ function BotaoRemover({ acao, pendente }) {
     >
       Remover
     </button>
+  );
+}
+
+function SecaoImagem({ produto }) {
+  const enviar = atualizarImagemProduto.bind(null, produto.id);
+  const remover = removerImagemProduto.bind(null, produto.id);
+
+  return (
+    <div className={`${CARTAO} animate-entrada mt-6 p-4`}>
+      <UploadImagem
+        urlAtual={produto.imagem_url}
+        acaoEnviar={enviar}
+        acaoRemover={remover}
+        rotulo="Imagem do produto"
+      />
+    </div>
   );
 }
 
@@ -402,6 +421,7 @@ function SecaoOpcoes({ produto, sugestoes }) {
 export default function FormularioProdutoDetalhado({ produto, sugestoes }) {
   return (
     <>
+      <SecaoImagem produto={produto} />
       <SecaoBase produto={produto} />
       <SecaoAtributos produto={produto} sugestoes={sugestoes} />
       <SecaoOpcoes produto={produto} sugestoes={sugestoes} />

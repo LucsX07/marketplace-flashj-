@@ -37,6 +37,8 @@ create table public.estabelecimentos (
   endereco text,
   cidade text,
   ativo boolean not null default true,
+  capa_url text,
+  aberto_agora boolean not null default true,
   criado_em timestamptz not null default now()
 );
 
@@ -357,3 +359,42 @@ insert into public.categorias (nome) values
   ('Mercado'),
   ('Farmácia'),
   ('Loja');
+
+-- ============================================================
+-- Storage: imagens de capa (estabelecimento) e de produto.
+-- Buckets públicos pra leitura (a URL pública funciona sem autenticação,
+-- direto no <img>/next-image); escrita restrita ao dono, mesmo raciocínio
+-- de RLS já usado em todas as tabelas acima. Caminho do arquivo sempre
+-- começa com o id do dono do recurso (ex.: "{estabelecimento_id}/capa.jpg"),
+-- é isso que a policy usa pra confirmar a posse.
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values
+  ('capas-estabelecimentos', 'capas-estabelecimentos', true),
+  ('imagens-produtos', 'imagens-produtos', true)
+on conflict (id) do nothing;
+
+create policy "capas-estabelecimentos: leitura publica" on storage.objects
+  for select using (bucket_id = 'capas-estabelecimentos');
+create policy "capas-estabelecimentos: dono gerencia" on storage.objects
+  for all using (
+    bucket_id = 'capas-estabelecimentos'
+    and exists (
+      select 1 from public.estabelecimentos e
+      where e.id::text = (storage.foldername(name))[1]
+        and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
+    )
+  );
+
+create policy "imagens-produtos: leitura publica" on storage.objects
+  for select using (bucket_id = 'imagens-produtos');
+create policy "imagens-produtos: dono gerencia" on storage.objects
+  for all using (
+    bucket_id = 'imagens-produtos'
+    and exists (
+      select 1 from public.produtos p
+      join public.estabelecimentos e on e.id = p.estabelecimento_id
+      where p.id::text = (storage.foldername(name))[1]
+        and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
+    )
+  );

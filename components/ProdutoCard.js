@@ -5,6 +5,7 @@ import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
 import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, CARTAO } from "@/lib/ui";
 import SeletorDeOpcoesProduto from "@/components/SeletorDeOpcoesProduto";
+import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
 export default function ProdutoCard({ produto }) {
   const { adicionarItem } = useCarrinho();
@@ -34,44 +35,52 @@ export default function ProdutoCard({ produto }) {
   }
 
   return (
-    <div className={`${CARTAO} animate-entrada p-4`}>
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-display font-bold text-ink">{produto.nome}</h3>
-        {produto.em_destaque && (
-          <span className="shrink-0 rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
-            Destaque
-          </span>
-        )}
-      </div>
-      {produto.descricao && <p className="text-sm text-ink-muted">{produto.descricao}</p>}
+    <div className={`${CARTAO} animate-entrada overflow-hidden`}>
+      <ImagemComPlaceholder
+        src={produto.imagem_url}
+        alt={produto.nome}
+        className="h-36 w-full"
+      />
 
-      {produto.produto_atributos?.length > 0 && (
-        <ul className="mt-2 space-y-0.5 text-xs text-ink-faint">
-          {produto.produto_atributos.map((atributo) => (
-            <li key={atributo.id}>
-              {atributo.nome}: {atributo.valor}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="font-medium text-ink">
-          {temOpcoes && <span className="mr-1 text-xs text-ink-faint">a partir de</span>}
-          {produto.preco_promocional ? (
-            <>
-              <span className="mr-1.5 text-xs text-ink-faint line-through">
-                {formatarPreco(produto.preco)}
-              </span>
-              {formatarPreco(produto.preco_promocional)}
-            </>
-          ) : (
-            formatarPreco(produto.preco)
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-display font-bold text-ink">{produto.nome}</h3>
+          {produto.em_destaque && (
+            <span className="shrink-0 rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+              Destaque
+            </span>
           )}
-        </span>
-        <button onClick={lidarComClique} className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}>
-          {adicionado ? "Adicionado ✓" : temOpcoes ? "Escolher" : "Adicionar"}
-        </button>
+        </div>
+        {produto.descricao && <p className="text-sm text-ink-muted">{produto.descricao}</p>}
+
+        {produto.produto_atributos?.length > 0 && (
+          <ul className="mt-2 space-y-0.5 text-xs text-ink-faint">
+            {produto.produto_atributos.map((atributo) => (
+              <li key={atributo.id}>
+                {atributo.nome}: {atributo.valor}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-3 flex items-center justify-between">
+          <span className="font-medium text-ink">
+            {temOpcoes && <span className="mr-1 text-xs text-ink-faint">a partir de</span>}
+            {produto.preco_promocional ? (
+              <>
+                <span className="mr-1.5 text-xs text-ink-faint line-through">
+                  {formatarPreco(produto.preco)}
+                </span>
+                {formatarPreco(produto.preco_promocional)}
+              </>
+            ) : (
+              formatarPreco(produto.preco)
+            )}
+          </span>
+          <button onClick={lidarComClique} className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}>
+            {adicionado ? "Adicionado ✓" : temOpcoes ? "Escolher" : "Adicionar"}
+          </button>
+        </div>
       </div>
 
       {seletorAberto && (

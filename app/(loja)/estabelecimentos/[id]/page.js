@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ProdutoCard from "@/components/ProdutoCard";
+import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 import { buscarEstabelecimentoPorId } from "@/lib/estabelecimentos";
 import { buscarProdutosPorEstabelecimento } from "@/lib/produtos";
 
@@ -14,26 +15,48 @@ export default async function PaginaEstabelecimento({ params }) {
   const produtos = await buscarProdutosPorEstabelecimento(id);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      {estabelecimento.categorias?.nome && (
-        <span className="text-xs font-semibold uppercase tracking-wide text-brand">
-          {estabelecimento.categorias.nome}
-        </span>
-      )}
-      <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
-        {estabelecimento.nome}
-      </h1>
-      <p className="mt-1 text-ink-muted">{estabelecimento.descricao}</p>
+    <main className="mx-auto max-w-3xl pb-10 sm:px-6 sm:py-10">
+      <ImagemComPlaceholder
+        src={estabelecimento.capa_url}
+        alt={estabelecimento.nome}
+        className="h-40 w-full sm:rounded-md sm:h-56"
+        sizes="(max-width: 768px) 100vw, 768px"
+      />
 
-      {produtos.length === 0 ? (
-        <p className="mt-8 text-ink-muted">Nenhum produto disponível no momento.</p>
-      ) : (
-        <div className="stagger mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {produtos.map((produto) => (
-            <ProdutoCard key={produto.id} produto={produto} />
-          ))}
+      <div className="px-4 sm:px-0">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {estabelecimento.categorias?.nome && (
+            <span className="text-xs font-semibold uppercase tracking-wide text-brand">
+              {estabelecimento.categorias.nome}
+            </span>
+          )}
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              estabelecimento.aberto_agora
+                ? "bg-brand-tint text-brand"
+                : "bg-warn-tint text-warn"
+            }`}
+          >
+            {estabelecimento.aberto_agora ? "Aberto agora" : "Fechado agora"}
+          </span>
         </div>
-      )}
+        <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+          {estabelecimento.nome}
+        </h1>
+        <p className="mt-1 text-ink-muted">{estabelecimento.descricao}</p>
+
+        {produtos.length === 0 ? (
+          <p className="mt-8 text-ink-muted">
+            Este estabelecimento ainda não adicionou produtos.
+          </p>
+        ) : (
+          <div className="stagger mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {produtos.map((produto) => (
+              <ProdutoCard key={produto.id} produto={produto} />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

@@ -55,6 +55,15 @@ export default async function PainelInicial() {
             Gerencie o cardápio do seu estabelecimento.
           </p>
         </Link>
+        <Link
+          href="/painel/loja"
+          className="animate-entrada rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
+        >
+          <h2 className="font-display font-bold text-ink">Minha loja</h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Capa, dados da loja e se está aberta agora.
+          </p>
+        </Link>
       </div>
     </main>
   );
