@@ -6,8 +6,9 @@ import { formatarPreco, formatarData } from "@/lib/formatar";
 import StatusBadge from "@/components/StatusBadge";
 import PedidoTimeline from "@/components/PedidoTimeline";
 
-export default async function PaginaPedido({ params }) {
+export default async function PaginaPedido({ params, searchParams }) {
   const { id } = await params;
+  const { novo } = await searchParams;
   const pedido = await buscarPedidoPorId(id);
 
   if (!pedido) {
@@ -24,6 +25,12 @@ export default async function PaginaPedido({ params }) {
       >
         ← Meus pedidos
       </Link>
+
+      {novo === "1" && (
+        <div className="animate-entrada mt-4 rounded-md border border-brand bg-brand-tint px-4 py-3 text-sm font-medium text-brand">
+          Pedido confirmado 🎉 Acompanhe o andamento aqui.
+        </div>
+      )}
 
       <div className="animate-entrada mt-3 flex flex-wrap items-center justify-between gap-3">
         <div>

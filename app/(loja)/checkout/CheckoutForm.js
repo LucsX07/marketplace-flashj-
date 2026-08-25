@@ -26,7 +26,7 @@ export default function CheckoutForm() {
       }
 
       limparCarrinho();
-      router.push(`/pedidos/${resultado.pedidoId}`);
+      router.push(`/pedidos/${resultado.pedidoId}?novo=1`);
     });
   }
 
