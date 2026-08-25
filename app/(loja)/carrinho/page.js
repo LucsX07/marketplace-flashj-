@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
+import { formatarPreco } from "@/lib/formatar";
 
 export default function PaginaCarrinho() {
   const { itens, removerItem, total } = useCarrinho();
@@ -24,20 +25,15 @@ export default function PaginaCarrinho() {
 
       <ul className="mt-6 divide-y divide-black/10">
         {itens.map((item) => (
-          <li key={item.produtoId} className="flex items-center justify-between py-3">
+          <li key={item.produto_id} className="flex items-center justify-between py-3">
             <div>
               <p className="font-medium">{item.nome}</p>
               <p className="text-sm text-black/60">Qtd: {item.quantidade}</p>
             </div>
             <div className="flex items-center gap-3">
-              <span>
-                {(item.preco * item.quantidade).toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </span>
+              <span>{formatarPreco(item.preco * item.quantidade)}</span>
               <button
-                onClick={() => removerItem(item.produtoId)}
+                onClick={() => removerItem(item.produto_id)}
                 className="text-sm text-red-600 underline"
               >
                 Remover
@@ -49,9 +45,7 @@ export default function PaginaCarrinho() {
 
       <div className="mt-6 flex items-center justify-between border-t border-black/10 pt-4">
         <span className="font-semibold">Total</span>
-        <span className="font-semibold">
-          {total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-        </span>
+        <span className="font-semibold">{formatarPreco(total)}</span>
       </div>
 
       <Link

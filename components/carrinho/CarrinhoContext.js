@@ -12,13 +12,13 @@ export function CarrinhoProvider({ children }) {
       // O carrinho é de um único estabelecimento por vez: adicionar um
       // produto de outro estabelecimento reinicia o carrinho.
       const deOutroEstabelecimento =
-        atual.length > 0 && atual[0].estabelecimentoId !== produto.estabelecimentoId;
+        atual.length > 0 && atual[0].estabelecimento_id !== produto.estabelecimento_id;
       const base = deOutroEstabelecimento ? [] : atual;
 
-      const existente = base.find((item) => item.produtoId === produto.id);
+      const existente = base.find((item) => item.produto_id === produto.id);
       if (existente) {
         return base.map((item) =>
-          item.produtoId === produto.id
+          item.produto_id === produto.id
             ? { ...item, quantidade: item.quantidade + 1 }
             : item
         );
@@ -27,18 +27,18 @@ export function CarrinhoProvider({ children }) {
       return [
         ...base,
         {
-          produtoId: produto.id,
+          produto_id: produto.id,
           nome: produto.nome,
           preco: produto.preco,
           quantidade: 1,
-          estabelecimentoId: produto.estabelecimentoId,
+          estabelecimento_id: produto.estabelecimento_id,
         },
       ];
     });
   }
 
   function removerItem(produtoId) {
-    setItens((atual) => atual.filter((item) => item.produtoId !== produtoId));
+    setItens((atual) => atual.filter((item) => item.produto_id !== produtoId));
   }
 
   function limparCarrinho() {

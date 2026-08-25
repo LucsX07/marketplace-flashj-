@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { CarrinhoProvider } from "@/components/carrinho/CarrinhoContext";
+import { criarClienteServidor } from "@/lib/supabase/server";
+import { sair } from "@/lib/actions/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,7 +20,22 @@ export const metadata = {
   description: "Marketplace de comércio local — conecta consumidores a estabelecimentos",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const supabase = await criarClienteServidor();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let usuario = null;
+  if (user) {
+    const { data } = await supabase
+      .from("usuarios")
+      .select("nome, tipo")
+      .eq("id", user.id)
+      .maybeSingle();
+    usuario = data;
+  }
+
   return (
     <html
       lang="pt-BR"
@@ -31,9 +48,20 @@ export default function RootLayout({ children }) {
               <Link href="/" className="font-bold">
                 FlashJá
               </Link>
-              <div className="flex gap-4 text-sm">
+              <div className="flex items-center gap-4 text-sm">
                 <Link href="/carrinho">Carrinho</Link>
-                <Link href="/painel">Painel do comerciante</Link>
+                {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
+                  <Link href="/painel">Painel do comerciante</Link>
+                )}
+                {usuario ? (
+                  <form action={sair}>
+                    <button type="submit" className="underline">
+                      Sair ({usuario.nome})
+                    </button>
+                  </form>
+                ) : (
+                  <Link href="/entrar">Entrar</Link>
+                )}
               </div>
             </nav>
           </header>
