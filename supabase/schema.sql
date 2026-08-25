@@ -34,6 +34,7 @@ create table public.estabelecimentos (
   nome text not null,
   descricao text,
   endereco text,
+  cidade text,
   ativo boolean not null default true,
   criado_em timestamptz not null default now()
 );
@@ -92,11 +93,12 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.usuarios (id, tipo, nome)
+  insert into public.usuarios (id, tipo, nome, telefone)
   values (
     new.id,
     coalesce((new.raw_user_meta_data ->> 'tipo')::tipo_usuario, 'consumidor'),
-    coalesce(new.raw_user_meta_data ->> 'nome', new.email)
+    coalesce(new.raw_user_meta_data ->> 'nome', new.email),
+    new.raw_user_meta_data ->> 'telefone'
   );
   return new;
 end;

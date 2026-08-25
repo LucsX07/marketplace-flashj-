@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { buscarMeuEstabelecimento } from "@/lib/estabelecimentos";
 import { listarCategorias } from "@/lib/categorias";
+import { criarEstabelecimentoAutomatico } from "@/lib/actions/estabelecimentos";
 import FormularioEstabelecimento from "./FormularioEstabelecimento";
 
 export default async function PainelInicial() {
-  const estabelecimento = await buscarMeuEstabelecimento();
+  let estabelecimento = await buscarMeuEstabelecimento();
+
+  // Comerciante que preencheu os dados do negócio já no cadastro (ver
+  // FormularioCadastro) não precisa preencher de novo — tenta criar direto
+  // a partir dos metadados salvos na conta.
+  if (!estabelecimento) {
+    estabelecimento = await criarEstabelecimentoAutomatico();
+  }
 
   if (!estabelecimento) {
     const categorias = await listarCategorias();

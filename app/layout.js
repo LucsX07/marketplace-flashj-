@@ -4,6 +4,7 @@ import { CarrinhoProvider } from "@/components/carrinho/CarrinhoContext";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { sair } from "@/lib/actions/auth";
 import BrandMark from "@/components/BrandMark";
+import BarraInferior from "@/components/BarraInferior";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -44,7 +45,7 @@ export default async function RootLayout({ children }) {
       lang="pt-BR"
       className={`${archivo.variable} ${publicSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
+      <body className="flex min-h-full flex-col bg-bg pb-14 font-sans text-ink sm:pb-0">
         <CarrinhoProvider>
           <header className="border-b border-line">
             <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
@@ -57,14 +58,14 @@ export default async function RootLayout({ children }) {
               <div className="flex items-center gap-5 text-sm font-medium">
                 <Link
                   href="/carrinho"
-                  className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                  className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
                 >
                   Carrinho
                 </Link>
                 {usuario && (
                   <Link
                     href="/pedidos"
-                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                    className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
                   >
                     Pedidos
                   </Link>
@@ -72,7 +73,7 @@ export default async function RootLayout({ children }) {
                 {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
                   <Link
                     href="/painel"
-                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                    className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
                   >
                     Painel
                   </Link>
@@ -98,6 +99,7 @@ export default async function RootLayout({ children }) {
             </nav>
           </header>
           {children}
+          <BarraInferior usuario={usuario} />
         </CarrinhoProvider>
       </body>
     </html>

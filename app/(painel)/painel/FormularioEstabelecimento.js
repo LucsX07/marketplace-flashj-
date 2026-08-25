@@ -33,6 +33,10 @@ export default function FormularioEstabelecimento({ categorias }) {
         <label className="block text-sm font-medium text-ink">Endereço</label>
         <input name="endereco" required className={CAMPO} />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-ink">Cidade</label>
+        <input name="cidade" required className={CAMPO} />
+      </div>
 
       {estado?.erro && <p className="animate-entrada text-sm text-warn">{estado.erro}</p>}
 
