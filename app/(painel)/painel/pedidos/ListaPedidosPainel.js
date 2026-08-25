@@ -59,6 +59,12 @@ export default function ListaPedidosPainel({ pedidosIniciais }) {
             {pedido.itens_pedido.map((item, indice) => (
               <li key={indice}>
                 {item.quantidade}x {item.produtos.nome}
+                {item.item_pedido_opcoes?.length > 0 && (
+                  <span className="text-xs text-ink-faint">
+                    {" "}
+                    ({item.item_pedido_opcoes.map((opcao) => opcao.nome_valor).join(", ")})
+                  </span>
+                )}
               </li>
             ))}
           </ul>

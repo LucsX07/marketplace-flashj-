@@ -51,9 +51,14 @@ export default function CheckoutForm() {
 
       <ul className="mt-6 divide-y divide-line">
         {itens.map((item) => (
-          <li key={item.produto_id} className="flex justify-between py-2 text-sm text-ink">
+          <li key={item.chave} className="flex justify-between py-2 text-sm text-ink">
             <span>
               {item.quantidade}x {item.nome}
+              {item.opcoes_selecionadas?.length > 0 && (
+                <span className="block text-xs text-ink-faint">
+                  {item.opcoes_selecionadas.map((opcao) => opcao.valor_nome).join(", ")}
+                </span>
+              )}
             </span>
             <span>{formatarPreco(item.preco * item.quantidade)}</span>
           </li>

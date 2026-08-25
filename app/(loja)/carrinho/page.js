@@ -29,17 +29,22 @@ export default function PaginaCarrinho() {
       <ul className="stagger mt-6 divide-y divide-line">
         {itens.map((item) => (
           <li
-            key={item.produto_id}
+            key={item.chave}
             className="animate-entrada flex items-center justify-between py-3"
           >
             <div>
               <p className="font-medium text-ink">{item.nome}</p>
+              {item.opcoes_selecionadas?.length > 0 && (
+                <p className="text-xs text-ink-faint">
+                  {item.opcoes_selecionadas.map((opcao) => opcao.valor_nome).join(", ")}
+                </p>
+              )}
               <p className="text-sm text-ink-muted">Qtd: {item.quantidade}</p>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-ink">{formatarPreco(item.preco * item.quantidade)}</span>
               <button
-                onClick={() => removerItem(item.produto_id)}
+                onClick={() => removerItem(item.chave)}
                 className="text-sm text-warn transition-transform duration-150 hover:underline active:scale-[0.97]"
               >
                 Remover

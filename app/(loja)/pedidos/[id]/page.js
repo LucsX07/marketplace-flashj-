@@ -57,6 +57,11 @@ export default async function PaginaPedido({ params }) {
                 </span>
                 <span>{formatarPreco(item.subtotal)}</span>
               </div>
+              {item.item_pedido_opcoes?.length > 0 && (
+                <p className="text-xs text-ink-faint">
+                  {item.item_pedido_opcoes.map((opcao) => opcao.nome_valor).join(", ")}
+                </p>
+              )}
               <p className="text-xs text-ink-faint">
                 {formatarPreco(item.preco_unitario)} cada
               </p>
