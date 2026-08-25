@@ -107,6 +107,22 @@ create trigger ao_criar_usuario
   for each row execute function public.lidar_novo_usuario();
 
 -- ============================================================
+-- Permissões básicas de tabela para os roles anon/authenticated.
+-- Sem isso, mesmo com RLS liberando as linhas certas, o Postgres nega
+-- tudo antes de chequar qualquer política (erro 42501). Quem decide o
+-- que cada um pode ver/alterar de fato são as policies acima/abaixo —
+-- aqui só destravamos a porta de entrada.
+-- ============================================================
+grant usage on schema public to anon, authenticated;
+grant all on all tables in schema public to anon, authenticated;
+grant all on all sequences in schema public to anon, authenticated;
+grant all on all routines in schema public to anon, authenticated;
+
+alter default privileges in schema public grant all on tables to anon, authenticated;
+alter default privileges in schema public grant all on sequences to anon, authenticated;
+alter default privileges in schema public grant all on routines to anon, authenticated;
+
+-- ============================================================
 -- Row Level Security — o próprio banco decide quem vê/altera o quê.
 -- ============================================================
 alter table public.usuarios enable row level security;
