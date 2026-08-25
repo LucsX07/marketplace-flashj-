@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { atualizarStatusPedido } from "@/lib/actions/pedidos";
-import { STATUS_PEDIDO, STATUS_LABEL, STATUS_BADGE } from "@/lib/status-pedido";
+import { STATUS_PEDIDO, STATUS_LABEL } from "@/lib/status-pedido";
 import { formatarPreco } from "@/lib/formatar";
+import StatusBadge from "@/components/StatusBadge";
+import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO } from "@/lib/ui";
 
 const PROXIMO_STATUS = {
   [STATUS_PEDIDO.ACEITO]: STATUS_PEDIDO.EM_PREPARO,
@@ -13,6 +15,7 @@ const PROXIMO_STATUS = {
 
 export default function ListaPedidosPainel({ pedidosIniciais }) {
   const [pedidos, setPedidos] = useState(pedidosIniciais);
+  const [versoes, setVersoes] = useState({});
   const [pendente, iniciarTransicao] = useTransition();
 
   function mudarStatus(id, status) {
@@ -20,29 +23,33 @@ export default function ListaPedidosPainel({ pedidosIniciais }) {
       const resultado = await atualizarStatusPedido(id, status);
       if (!resultado.erro) {
         setPedidos((atual) => atual.map((p) => (p.id === id ? { ...p, status } : p)));
+        setVersoes((atual) => ({ ...atual, [id]: (atual[id] || 0) + 1 }));
       }
     });
   }
 
   if (pedidos.length === 0) {
     return (
-      <p className="mt-4 text-ink-muted">
+      <p className="animate-entrada mt-4 text-ink-muted">
         Nenhum pedido ainda. Faça um pedido de teste como consumidor para ver aqui.
       </p>
     );
   }
 
   return (
-    <ul className="mt-6 space-y-4">
+    <ul className="stagger mt-6 space-y-4">
       {pedidos.map((pedido) => (
-        <li key={pedido.id} className="rounded-md border border-line bg-surface p-4">
+        <li
+          key={pedido.id}
+          className="animate-entrada rounded-md border border-line bg-surface p-4"
+        >
           <div className="flex items-center justify-between">
             <span className="font-semibold text-ink">Pedido #{pedido.id.slice(0, 8)}</span>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[pedido.status]}`}
-            >
-              {STATUS_LABEL[pedido.status]}
-            </span>
+            <StatusBadge
+              key={`${pedido.id}-${versoes[pedido.id] || 0}`}
+              status={pedido.status}
+              pulsar={Boolean(versoes[pedido.id])}
+            />
           </div>
           <p className="text-sm text-ink-muted">
             {pedido.usuarios?.nome} · {pedido.usuarios?.telefone}
@@ -63,14 +70,14 @@ export default function ListaPedidosPainel({ pedidosIniciais }) {
                 <button
                   disabled={pendente}
                   onClick={() => mudarStatus(pedido.id, STATUS_PEDIDO.ACEITO)}
-                  className="corner-cut rounded-sm bg-brand px-3 py-1.5 text-sm font-semibold text-on-brand disabled:opacity-60"
+                  className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}
                 >
                   Aceitar
                 </button>
                 <button
                   disabled={pendente}
                   onClick={() => mudarStatus(pedido.id, STATUS_PEDIDO.RECUSADO)}
-                  className="rounded-md border border-line px-3 py-1.5 text-sm text-ink hover:border-line-strong disabled:opacity-60"
+                  className={`${BOTAO_SECUNDARIO} py-1.5 text-sm`}
                 >
                   Recusar
                 </button>
@@ -80,7 +87,7 @@ export default function ListaPedidosPainel({ pedidosIniciais }) {
               <button
                 disabled={pendente}
                 onClick={() => mudarStatus(pedido.id, PROXIMO_STATUS[pedido.status])}
-                className="rounded-md border border-line px-3 py-1.5 text-sm text-ink hover:border-line-strong disabled:opacity-60"
+                className={`${BOTAO_SECUNDARIO} py-1.5 text-sm`}
               >
                 Marcar como {STATUS_LABEL[PROXIMO_STATUS[pedido.status]]}
               </button>

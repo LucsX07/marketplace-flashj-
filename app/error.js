@@ -1,10 +1,12 @@
 "use client";
 
+import { BOTAO_PRIMARIO } from "@/lib/ui";
+
 export default function ErroGlobal({ error, reset }) {
   const naoConfigurado = error?.message?.includes("Supabase não configurado");
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-16 text-center sm:px-6">
+    <main className="animate-entrada mx-auto max-w-xl px-4 py-16 text-center sm:px-6">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
         {naoConfigurado ? "Falta configurar o Supabase" : "Algo deu errado"}
       </h1>
@@ -13,10 +15,7 @@ export default function ErroGlobal({ error, reset }) {
           ? "Crie um projeto em supabase.com, copie a URL e a anon key em Project Settings > API, e cole no arquivo .env.local (veja o README)."
           : error?.message || "Tente novamente em instantes."}
       </p>
-      <button
-        onClick={reset}
-        className="corner-cut mt-6 rounded-sm bg-brand px-4 py-2 font-semibold text-on-brand hover:bg-brand-hover"
-      >
+      <button onClick={reset} className={`${BOTAO_PRIMARIO} mt-6`}>
         Tentar de novo
       </button>
     </main>

@@ -3,10 +3,9 @@
 import { useActionState, useTransition } from "react";
 import { criarProduto, alternarDisponibilidade } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
+import { BOTAO_PRIMARIO, CAMPO } from "@/lib/ui";
 
 const estadoInicial = { erro: null };
-const campoClasse =
-  "mt-1 rounded-md border border-line bg-surface px-3 py-2 text-ink placeholder:text-ink-faint focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand";
 
 export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciais }) {
   const criarProdutoComEstabelecimento = criarProduto.bind(null, estabelecimentoId);
@@ -27,11 +26,11 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
       <form action={formAction} className="mt-6 flex flex-wrap items-end gap-3">
         <div>
           <label className="block text-sm font-medium text-ink">Nome</label>
-          <input name="nome" required className={campoClasse} />
+          <input name="nome" required className={CAMPO} />
         </div>
         <div>
           <label className="block text-sm font-medium text-ink">Descrição</label>
-          <input name="descricao" className={campoClasse} />
+          <input name="descricao" className={CAMPO} />
         </div>
         <div>
           <label className="block text-sm font-medium text-ink">Preço (R$)</label>
@@ -41,27 +40,28 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
             step="0.01"
             min="0"
             required
-            className={`${campoClasse} w-28`}
+            className={`${CAMPO} w-28`}
           />
         </div>
-        <button
-          type="submit"
-          disabled={pendente}
-          className="corner-cut rounded-sm bg-brand px-4 py-2 text-sm font-semibold text-on-brand disabled:opacity-60"
-        >
+        <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} text-sm`}>
           {pendente ? "Salvando..." : "Adicionar produto"}
         </button>
       </form>
-      {estado?.erro && <p className="mt-2 text-sm text-warn">{estado.erro}</p>}
+      {estado?.erro && <p className="animate-entrada mt-2 text-sm text-warn">{estado.erro}</p>}
 
       {produtosIniciais.length === 0 ? (
-        <p className="mt-8 text-ink-muted">Nenhum produto cadastrado ainda.</p>
+        <p className="animate-entrada mt-8 text-ink-muted">Nenhum produto cadastrado ainda.</p>
       ) : (
-        <ul className="mt-8 divide-y divide-line">
+        <ul className="stagger mt-8 divide-y divide-line">
           {produtosIniciais.map((produto) => (
-            <li key={produto.id} className="flex items-center justify-between py-3">
+            <li
+              key={produto.id}
+              className="animate-entrada flex items-center justify-between py-3"
+            >
               <div>
-                <span className={produto.disponivel ? "text-ink" : "text-ink-faint line-through"}>
+                <span
+                  className={`transition-colors duration-300 ${produto.disponivel ? "text-ink" : "text-ink-faint line-through"}`}
+                >
                   {produto.nome}
                 </span>
                 <span className="ml-2 text-ink-muted">{formatarPreco(produto.preco)}</span>
@@ -69,7 +69,7 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
               <button
                 disabled={alternandoDisponibilidade}
                 onClick={() => alternar(produto.id, produto.disponivel)}
-                className="text-sm font-medium text-brand hover:text-brand-hover disabled:opacity-60"
+                className="text-sm font-medium text-brand transition-transform duration-150 hover:text-brand-hover active:scale-[0.97] disabled:opacity-60"
               >
                 {produto.disponivel ? "Marcar indisponível" : "Marcar disponível"}
               </button>

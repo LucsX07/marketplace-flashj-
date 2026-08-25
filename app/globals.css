@@ -83,3 +83,65 @@ body {
   background-size: 28px 28px;
   opacity: 0.35;
 }
+
+/* ============================================================
+   Microanimações — rápidas, discretas, e desligadas de vez para
+   quem pede "reduzir movimento" no sistema.
+   ============================================================ */
+
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-entrada {
+  animation: entrada 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Aplica um pequeno atraso progressivo a itens de uma lista, pra entrarem
+   em cascata em vez de todos de uma vez. Uso: <ul class="stagger"> com
+   filhos .animate-entrada. */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+.stagger > *:nth-child(6) { animation-delay: 200ms; }
+.stagger > *:nth-child(n+7) { animation-delay: 240ms; }
+
+@keyframes brilho {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  border-radius: 0.375rem;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: brilho 1.6s ease-in-out infinite;
+}
+
+@keyframes pulso-status {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.animate-pulso-status {
+  animation: pulso-status 420ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

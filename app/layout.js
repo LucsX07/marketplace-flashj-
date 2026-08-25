@@ -55,24 +55,41 @@ export default async function RootLayout({ children }) {
                 </span>
               </Link>
               <div className="flex items-center gap-5 text-sm font-medium">
-                <Link href="/carrinho" className="text-ink-muted hover:text-ink">
+                <Link
+                  href="/carrinho"
+                  className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                >
                   Carrinho
                 </Link>
+                {usuario && (
+                  <Link
+                    href="/pedidos"
+                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                  >
+                    Pedidos
+                  </Link>
+                )}
                 {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
-                  <Link href="/painel" className="text-ink-muted hover:text-ink">
+                  <Link
+                    href="/painel"
+                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                  >
                     Painel
                   </Link>
                 )}
                 {usuario ? (
                   <form action={sair}>
-                    <button type="submit" className="text-ink-muted hover:text-ink">
+                    <button
+                      type="submit"
+                      className="text-ink-muted transition-colors duration-150 hover:text-ink active:scale-[0.97]"
+                    >
                       Sair ({usuario.nome})
                     </button>
                   </form>
                 ) : (
                   <Link
                     href="/entrar"
-                    className="rounded-md bg-brand px-3 py-1.5 text-on-brand hover:bg-brand-hover"
+                    className="rounded-md bg-brand px-3 py-1.5 text-on-brand transition-[background-color,transform] duration-150 hover:bg-brand-hover active:scale-[0.97]"
                   >
                     Entrar
                   </Link>

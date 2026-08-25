@@ -13,12 +13,12 @@ export default async function PaginaInicial() {
       <p className="mt-4 text-ink-muted">Escolha um estabelecimento perto de você.</p>
 
       {estabelecimentos.length === 0 ? (
-        <div className="relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center">
+        <div className="animate-entrada relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center">
           <div className="grid-texture pointer-events-none absolute inset-0" />
           <p className="relative text-ink-muted">Nenhum estabelecimento cadastrado ainda.</p>
         </div>
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div className="stagger mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {estabelecimentos.map((estabelecimento) => (
             <EstabelecimentoCard key={estabelecimento.id} estabelecimento={estabelecimento} />
           ))}

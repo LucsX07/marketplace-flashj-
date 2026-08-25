@@ -28,7 +28,7 @@ export default async function PaginaEstabelecimento({ params }) {
       {produtos.length === 0 ? (
         <p className="mt-8 text-ink-muted">Nenhum produto disponível no momento.</p>
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="stagger mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {produtos.map((produto) => (
             <ProdutoCard key={produto.id} produto={produto} />
           ))}
