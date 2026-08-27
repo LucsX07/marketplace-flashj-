@@ -44,14 +44,16 @@ export default function ProdutoCard({ produto }) {
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display font-bold text-ink">{produto.nome}</h3>
+          <h3 className="font-display line-clamp-2 font-bold text-ink">{produto.nome}</h3>
           {produto.em_destaque && (
             <span className="shrink-0 rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
               Destaque
             </span>
           )}
         </div>
-        {produto.descricao && <p className="text-sm text-ink-muted">{produto.descricao}</p>}
+        {produto.descricao && (
+          <p className="line-clamp-2 text-sm text-ink-muted">{produto.descricao}</p>
+        )}
 
         {produto.produto_atributos?.length > 0 && (
           <ul className="mt-2 space-y-0.5 text-xs text-ink-faint">
@@ -63,12 +65,16 @@ export default function ProdutoCard({ produto }) {
           </ul>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
-          <span className="font-medium text-ink">
-            {temOpcoes && <span className="mr-1 text-xs text-ink-faint">a partir de</span>}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="font-display text-lg font-bold text-ink">
+            {temOpcoes && (
+              <span className="mr-1 font-sans text-xs font-normal text-ink-faint">
+                a partir de
+              </span>
+            )}
             {produto.preco_promocional ? (
               <>
-                <span className="mr-1.5 text-xs text-ink-faint line-through">
+                <span className="mr-1.5 font-sans text-xs font-normal text-ink-faint line-through">
                   {formatarPreco(produto.preco)}
                 </span>
                 {formatarPreco(produto.preco_promocional)}

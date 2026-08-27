@@ -5,7 +5,7 @@ import { atualizarStatusPedido } from "@/lib/actions/pedidos";
 import { STATUS_PEDIDO, STATUS_LABEL } from "@/lib/status-pedido";
 import { formatarPreco } from "@/lib/formatar";
 import StatusBadge from "@/components/StatusBadge";
-import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO } from "@/lib/ui";
+import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO, CARTAO } from "@/lib/ui";
 
 const PROXIMO_STATUS = {
   [STATUS_PEDIDO.ACEITO]: STATUS_PEDIDO.EM_PREPARO,
@@ -39,10 +39,7 @@ export default function ListaPedidosPainel({ pedidosIniciais }) {
   return (
     <ul className="stagger mt-6 space-y-4">
       {pedidos.map((pedido) => (
-        <li
-          key={pedido.id}
-          className="animate-entrada rounded-md border border-line bg-surface p-4"
-        >
+        <li key={pedido.id} className={`${CARTAO} animate-entrada p-4`}>
           <div className="flex items-center justify-between">
             <span className="font-semibold text-ink">Pedido #{pedido.id.slice(0, 8)}</span>
             <StatusBadge

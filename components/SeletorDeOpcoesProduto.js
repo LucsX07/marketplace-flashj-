@@ -73,7 +73,7 @@ export default function SeletorDeOpcoesProduto({ produto, aoConfirmar, aoFechar 
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-seletor-opcoes"
-        className="animate-entrada max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-md border border-line bg-surface p-5 sm:rounded-md"
+        className="animate-entrada max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-md border border-line bg-surface p-5 shadow-[var(--shadow-modal)] sm:rounded-md"
         onClick={(evento) => evento.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">

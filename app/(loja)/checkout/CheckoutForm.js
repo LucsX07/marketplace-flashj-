@@ -5,7 +5,21 @@ import { useRouter } from "next/navigation";
 import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
 import { criarPedido } from "@/lib/actions/pedidos";
 import { formatarPreco } from "@/lib/formatar";
-import { BOTAO_PRIMARIO } from "@/lib/ui";
+import { BOTAO_PRIMARIO, CARTAO } from "@/lib/ui";
+
+function Etapa({ numero, titulo, children }) {
+  return (
+    <section className={`${CARTAO} animate-entrada mt-4 p-4`}>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-tint text-xs font-bold text-brand">
+          {numero}
+        </span>
+        <h2 className="font-display font-bold text-ink">{titulo}</h2>
+      </div>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
 
 export default function CheckoutForm() {
   const { itens, total, limparCarrinho } = useCarrinho();
@@ -42,39 +56,54 @@ export default function CheckoutForm() {
   }
 
   return (
-    <main className="animate-entrada mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">Checkout</h1>
-      <p className="mt-1 text-ink-muted">
-        Retirada no estabelecimento. Pagamento é feito na hora da retirada — o
-        pagamento online chega numa próxima etapa.
-      </p>
+    <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <h1 className="animate-entrada font-display text-2xl font-extrabold tracking-tight text-ink">
+        Checkout
+      </h1>
 
-      <ul className="mt-6 divide-y divide-line">
-        {itens.map((item) => (
-          <li key={item.chave} className="flex justify-between py-2 text-sm text-ink">
-            <span>
-              {item.quantidade}x {item.nome}
-              {item.opcoes_selecionadas?.length > 0 && (
-                <span className="block text-xs text-ink-faint">
-                  {item.opcoes_selecionadas.map((opcao) => opcao.valor_nome).join(", ")}
-                </span>
-              )}
-            </span>
-            <span>{formatarPreco(item.preco * item.quantidade)}</span>
-          </li>
-        ))}
-      </ul>
+      <Etapa numero="1" titulo="Pedido">
+        <ul className="divide-y divide-line">
+          {itens.map((item) => (
+            <li key={item.chave} className="flex justify-between py-2 text-sm text-ink">
+              <span>
+                {item.quantidade}x {item.nome}
+                {item.opcoes_selecionadas?.length > 0 && (
+                  <span className="block text-xs text-ink-faint">
+                    {item.opcoes_selecionadas.map((opcao) => opcao.valor_nome).join(", ")}
+                  </span>
+                )}
+              </span>
+              <span>{formatarPreco(item.preco * item.quantidade)}</span>
+            </li>
+          ))}
+        </ul>
+      </Etapa>
 
-      <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
-        <span className="font-semibold text-ink">Total</span>
-        <span className="font-semibold text-ink">{formatarPreco(total)}</span>
-      </div>
+      <Etapa numero="2" titulo="Retirada e pagamento">
+        <p className="text-sm text-ink-muted">
+          Você retira o pedido no estabelecimento e paga na hora — o pagamento
+          online chega numa próxima etapa.
+        </p>
+      </Etapa>
 
-      {erro && <p className="mt-4 text-sm text-warn">{erro}</p>}
+      <Etapa numero="3" titulo="Confirmar">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-ink">Total</span>
+          <span className="font-display text-lg font-bold text-ink">
+            {formatarPreco(total)}
+          </span>
+        </div>
 
-      <button onClick={finalizarPedido} disabled={pendente} className={`${BOTAO_PRIMARIO} mt-6 w-full`}>
-        {pendente ? "Confirmando..." : "Confirmar pedido"}
-      </button>
+        {erro && <p className="animate-entrada mt-3 text-sm text-warn">{erro}</p>}
+
+        <button
+          onClick={finalizarPedido}
+          disabled={pendente}
+          className={`${BOTAO_PRIMARIO} mt-4 w-full`}
+        >
+          {pendente ? "Confirmando..." : "Confirmar pedido"}
+        </button>
+      </Etapa>
     </main>
   );
 }

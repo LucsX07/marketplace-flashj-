@@ -1,12 +1,13 @@
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import { formatarPreco, formatarData } from "@/lib/formatar";
+import { CARTAO } from "@/lib/ui";
 
 export default function PedidoResumoCard({ pedido }) {
   const totalItens = pedido.itens_pedido.reduce((soma, item) => soma + item.quantidade, 0);
 
   return (
-    <li className="animate-entrada rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-line-strong active:scale-[0.99]">
+    <li className={`${CARTAO} animate-entrada p-4 hover:border-line-strong active:scale-[0.99]`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-display font-bold text-ink">{pedido.estabelecimentos?.nome}</p>

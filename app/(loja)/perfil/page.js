@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { sair } from "@/lib/actions/auth";
 import SeletorDeTema from "@/components/SeletorDeTema";
-import { LINK_MARCA } from "@/lib/ui";
+import { CARTAO, CARTAO_INTERATIVO, LINK_MARCA } from "@/lib/ui";
 
 export default async function PaginaPerfil() {
   const supabase = await criarClienteServidor();
@@ -30,10 +30,7 @@ export default async function PaginaPerfil() {
       </h1>
 
       <div className="stagger mt-8 space-y-4">
-        <Link
-          href="/pedidos"
-          className="animate-entrada block rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
-        >
+        <Link href="/pedidos" className={`${CARTAO_INTERATIVO} animate-entrada block p-4`}>
           <h2 className="font-display font-bold text-ink">Meus pedidos</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Acompanhe e veja o histórico das suas compras.
@@ -41,16 +38,13 @@ export default async function PaginaPerfil() {
         </Link>
 
         {ehComerciante && (
-          <Link
-            href="/painel"
-            className="animate-entrada block rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
-          >
+          <Link href="/painel" className={`${CARTAO_INTERATIVO} animate-entrada block p-4`}>
             <h2 className="font-display font-bold text-ink">Painel do comerciante</h2>
             <p className="mt-1 text-sm text-ink-muted">Gerencie sua loja, produtos e pedidos.</p>
           </Link>
         )}
 
-        <div className="animate-entrada rounded-md border border-line bg-surface p-4">
+        <div className={`${CARTAO} animate-entrada p-4`}>
           <SeletorDeTema />
         </div>
 

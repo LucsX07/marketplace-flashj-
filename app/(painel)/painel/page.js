@@ -6,6 +6,7 @@ import { listarTodosProdutosDoEstabelecimento } from "@/lib/produtos";
 import { resumoDoDia } from "@/lib/pedidos";
 import { criarEstabelecimentoAutomatico } from "@/lib/actions/estabelecimentos";
 import { formatarPreco } from "@/lib/formatar";
+import { CARTAO, CARTAO_INTERATIVO } from "@/lib/ui";
 import FormularioEstabelecimento from "./FormularioEstabelecimento";
 
 function saudacaoPorHorario() {
@@ -62,20 +63,20 @@ export default async function PainelInicial() {
       </h1>
       <p className="mt-1 text-ink-muted">{estabelecimento.nome}</p>
 
-      <div className="stagger mt-6 grid grid-cols-3 gap-3">
-        <div className="animate-entrada rounded-md border border-line bg-surface p-4 text-center">
+      <div className={`${CARTAO} animate-entrada mt-6 grid grid-cols-3 divide-x divide-line`}>
+        <div className="p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-ink">{pedidosHoje}</p>
           <p className="mt-1 text-xs text-ink-muted">
             {pedidosHoje === 1 ? "pedido hoje" : "pedidos hoje"}
           </p>
         </div>
-        <div className="animate-entrada rounded-md border border-line bg-surface p-4 text-center">
+        <div className="p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-ink">
             {formatarPreco(receitaHoje)}
           </p>
           <p className="mt-1 text-xs text-ink-muted">hoje</p>
         </div>
-        <div className="animate-entrada rounded-md border border-line bg-surface p-4 text-center">
+        <div className="p-4 text-center">
           <p className="font-display text-2xl font-extrabold text-ink">{produtos.length}</p>
           <p className="mt-1 text-xs text-ink-muted">
             {produtos.length === 1 ? "produto" : "produtos"}
@@ -84,28 +85,19 @@ export default async function PainelInicial() {
       </div>
 
       <div className="stagger mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link
-          href="/painel/pedidos"
-          className="animate-entrada rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
-        >
+        <Link href="/painel/pedidos" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
           <h2 className="font-display font-bold text-ink">Pedidos recebidos</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Aceite, recuse e atualize o status dos pedidos.
           </p>
         </Link>
-        <Link
-          href="/painel/produtos"
-          className="animate-entrada rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
-        >
+        <Link href="/painel/produtos" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
           <h2 className="font-display font-bold text-ink">Produtos</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Gerencie o cardápio do seu estabelecimento.
           </p>
         </Link>
-        <Link
-          href="/painel/loja"
-          className="animate-entrada rounded-md border border-line bg-surface p-4 transition-[border-color,transform] duration-150 ease-out hover:border-brand active:scale-[0.99]"
-        >
+        <Link href="/painel/loja" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
           <h2 className="font-display font-bold text-ink">Minha loja</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Capa, dados da loja e se está aberta agora.

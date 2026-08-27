@@ -44,8 +44,11 @@ export default function VitrineCidade({ estabelecimentos, destaques }) {
       />
 
       {destaques.length > 0 && !busca && (
-        <section className="mt-10">
-          <h2 className="font-display text-lg font-bold text-ink">Destaques</h2>
+        <section className="mt-10 border-b border-line pb-10">
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-1 rounded-full bg-brand" />
+            <h2 className="font-display text-xl font-bold text-ink">Destaques</h2>
+          </div>
           <div className="stagger mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {destaques.map((produto) => (
               <ProdutoCard key={produto.id} produto={produto} />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useTransition } from "react";
 import { criarProduto, alternarDisponibilidade } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
-import { BOTAO_PRIMARIO, CAMPO } from "@/lib/ui";
+import { BOTAO_PRIMARIO, CAMPO, CARTAO } from "@/lib/ui";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
 const estadoInicial = { erro: null };
@@ -25,7 +25,7 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
 
   return (
     <>
-      <form action={formAction} className="mt-6 flex flex-wrap items-end gap-3">
+      <form action={formAction} className={`${CARTAO} animate-entrada mt-6 flex flex-wrap items-end gap-3 p-4`}>
         <div>
           <label className="block text-sm font-medium text-ink">Nome</label>
           <input name="nome" required className={CAMPO} />
@@ -54,7 +54,7 @@ export default function ListaProdutosPainel({ estabelecimentoId, produtosIniciai
       {produtosIniciais.length === 0 ? (
         <p className="animate-entrada mt-8 text-ink-muted">Nenhum produto cadastrado ainda.</p>
       ) : (
-        <ul className="stagger mt-8 divide-y divide-line">
+        <ul className={`${CARTAO} stagger mt-8 divide-y divide-line px-4`}>
           {produtosIniciais.map((produto) => (
             <li
               key={produto.id}
