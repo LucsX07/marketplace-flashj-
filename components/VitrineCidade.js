@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import EstabelecimentoCard from "@/components/EstabelecimentoCard";
 import ProdutoCard from "@/components/ProdutoCard";
 import { CAMPO } from "@/lib/ui";
+import { ITEM_ENTRADA, LISTA_ENTRADA } from "@/lib/motion";
 
 function agruparPorCategoria(estabelecimentos) {
   const grupos = new Map();
@@ -49,32 +51,46 @@ export default function VitrineCidade({ estabelecimentos, destaques }) {
             <span className="h-4 w-1 rounded-full bg-brand" />
             <h2 className="font-display text-xl font-bold text-ink">Destaques</h2>
           </div>
-          <div className="stagger mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <motion.div
+            variants={LISTA_ENTRADA}
+            initial="oculto"
+            animate="visivel"
+            className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+          >
             {destaques.map((produto) => (
               <ProdutoCard key={produto.id} produto={produto} />
             ))}
-          </div>
+          </motion.div>
         </section>
       )}
 
       {filtrados.length === 0 ? (
-        <div className="animate-entrada relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center">
+        <motion.div
+          initial={ITEM_ENTRADA.oculto}
+          animate={ITEM_ENTRADA.visivel}
+          className="relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center"
+        >
           <div className="grid-texture pointer-events-none absolute inset-0" />
           <p className="relative text-ink-muted">
             {busca
               ? "Nada encontrado com esse nome."
               : "A FlashJá ainda está chegando nessa cidade."}
           </p>
-        </div>
+        </motion.div>
       ) : (
         [...grupos.entries()].map(([nomeCategoria, itens]) => (
           <section key={nomeCategoria} className="mt-10">
             <h2 className="font-display text-lg font-bold text-ink">{nomeCategoria}</h2>
-            <div className="stagger mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <motion.div
+              variants={LISTA_ENTRADA}
+              initial="oculto"
+              animate="visivel"
+              className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+            >
               {itens.map((estabelecimento) => (
                 <EstabelecimentoCard key={estabelecimento.id} estabelecimento={estabelecimento} />
               ))}
-            </div>
+            </motion.div>
           </section>
         ))
       )}

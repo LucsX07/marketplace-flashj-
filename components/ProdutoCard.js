@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
 import { formatarPreco } from "@/lib/formatar";
 import { BOTAO_PRIMARIO, CARTAO } from "@/lib/ui";
+import { ITEM_ENTRADA, TOQUE_BOTAO } from "@/lib/motion";
 import SeletorDeOpcoesProduto from "@/components/SeletorDeOpcoesProduto";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
@@ -35,7 +37,7 @@ export default function ProdutoCard({ produto }) {
   }
 
   return (
-    <div className={`${CARTAO} animate-entrada overflow-hidden`}>
+    <motion.div variants={ITEM_ENTRADA} className={`${CARTAO} overflow-hidden`}>
       <ImagemComPlaceholder
         src={produto.imagem_url}
         alt={produto.nome}
@@ -83,9 +85,13 @@ export default function ProdutoCard({ produto }) {
               formatarPreco(produto.preco)
             )}
           </span>
-          <button onClick={lidarComClique} className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}>
+          <motion.button
+            whileTap={TOQUE_BOTAO}
+            onClick={lidarComClique}
+            className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}
+          >
             {adicionado ? "Adicionado ✓" : temOpcoes ? "Escolher" : "Adicionar"}
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -96,6 +102,6 @@ export default function ProdutoCard({ produto }) {
           aoConfirmar={confirmarAdicao}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

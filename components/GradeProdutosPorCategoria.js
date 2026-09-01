@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import ProdutoCard from "@/components/ProdutoCard";
+import { LISTA_ENTRADA } from "@/lib/motion";
 
 const TODOS = "Todos";
 
@@ -33,9 +35,10 @@ export default function GradeProdutosPorCategoria({ produtos }) {
       {categorias.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2">
           {[TODOS, ...categorias].map((categoria) => (
-            <button
+            <motion.button
               key={categoria}
               type="button"
+              whileTap={{ scale: 0.95 }}
               onClick={() => setAtiva(categoria)}
               className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
                 ativa === categoria
@@ -44,16 +47,25 @@ export default function GradeProdutosPorCategoria({ produtos }) {
               }`}
             >
               {categoria}
-            </button>
+            </motion.button>
           ))}
         </div>
       )}
 
-      <div className="stagger mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {filtrados.map((produto) => (
-          <ProdutoCard key={produto.id} produto={produto} />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={ativa}
+          variants={LISTA_ENTRADA}
+          initial="oculto"
+          animate="visivel"
+          exit={{ opacity: 0, transition: { duration: 0.1 } }}
+          className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
+        >
+          {filtrados.map((produto) => (
+            <ProdutoCard key={produto.id} produto={produto} />
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

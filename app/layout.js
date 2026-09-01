@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Archivo, Public_Sans } from "next/font/google";
+import { MotionConfig } from "framer-motion";
 import { CarrinhoProvider } from "@/components/carrinho/CarrinhoContext";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import BrandMark from "@/components/BrandMark";
 import BarraInferior from "@/components/BarraInferior";
+import TransicaoDePagina from "@/components/TransicaoDePagina";
 import "./globals.css";
 
 // Aplica o tema escolhido manualmente (salvo em localStorage) antes da
@@ -54,59 +56,61 @@ export default async function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
       </head>
       <body className="flex min-h-full flex-col bg-bg pb-14 font-sans text-ink sm:pb-0">
-        <CarrinhoProvider>
-          <header className="border-b border-line">
-            <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-              <Link href="/" className="flex items-center gap-2">
-                <BrandMark className="h-6 w-6 text-brand" />
-                <span className="font-display text-lg font-extrabold tracking-tight">
-                  Flash<span className="text-brand">Já</span>
-                </span>
-              </Link>
-              <div className="flex items-center gap-5 text-sm font-medium">
-                <Link
-                  href="/carrinho"
-                  className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
-                >
-                  Carrinho
+        <MotionConfig reducedMotion="user">
+          <CarrinhoProvider>
+            <header className="border-b border-line">
+              <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+                <Link href="/" className="flex items-center gap-2">
+                  <BrandMark className="h-6 w-6 text-brand" />
+                  <span className="font-display text-lg font-extrabold tracking-tight">
+                    Flash<span className="text-brand">Já</span>
+                  </span>
                 </Link>
-                {usuario && (
+                <div className="flex items-center gap-5 text-sm font-medium">
                   <Link
-                    href="/pedidos"
+                    href="/carrinho"
                     className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
                   >
-                    Pedidos
+                    Carrinho
                   </Link>
-                )}
-                {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
-                  <Link
-                    href="/painel"
-                    className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
-                  >
-                    Painel
-                  </Link>
-                )}
-                {usuario ? (
-                  <Link
-                    href="/perfil"
-                    className="text-ink-muted transition-colors duration-150 hover:text-ink"
-                  >
-                    {usuario.nome}
-                  </Link>
-                ) : (
-                  <Link
-                    href="/entrar"
-                    className="rounded-md bg-brand px-3 py-1.5 text-on-brand transition-[background-color,transform] duration-150 hover:bg-brand-hover active:scale-[0.97]"
-                  >
-                    Entrar
-                  </Link>
-                )}
-              </div>
-            </nav>
-          </header>
-          {children}
-          <BarraInferior usuario={usuario} />
-        </CarrinhoProvider>
+                  {usuario && (
+                    <Link
+                      href="/pedidos"
+                      className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
+                    >
+                      Pedidos
+                    </Link>
+                  )}
+                  {(usuario?.tipo === "comerciante" || usuario?.tipo === "administrador") && (
+                    <Link
+                      href="/painel"
+                      className="hidden text-ink-muted transition-colors duration-150 hover:text-ink sm:inline"
+                    >
+                      Painel
+                    </Link>
+                  )}
+                  {usuario ? (
+                    <Link
+                      href="/perfil"
+                      className="text-ink-muted transition-colors duration-150 hover:text-ink"
+                    >
+                      {usuario.nome}
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/entrar"
+                      className="rounded-md bg-brand px-3 py-1.5 text-on-brand transition-[background-color,transform] duration-150 hover:bg-brand-hover active:scale-[0.97]"
+                    >
+                      Entrar
+                    </Link>
+                  )}
+                </div>
+              </nav>
+            </header>
+            <TransicaoDePagina>{children}</TransicaoDePagina>
+            <BarraInferior usuario={usuario} />
+          </CarrinhoProvider>
+        </MotionConfig>
       </body>
     </html>
   );
