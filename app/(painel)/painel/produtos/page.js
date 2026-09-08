@@ -3,7 +3,8 @@ import { buscarMeuEstabelecimento } from "@/lib/estabelecimentos";
 import { listarTodosProdutosDoEstabelecimento } from "@/lib/produtos";
 import ListaProdutosPainel from "./ListaProdutosPainel";
 
-export default async function PainelProdutos() {
+export default async function PainelProdutos({ searchParams }) {
+  const params = await searchParams;
   const estabelecimento = await buscarMeuEstabelecimento();
 
   if (!estabelecimento) {
@@ -31,6 +32,12 @@ export default async function PainelProdutos() {
       <p className="mt-1 text-ink-muted">
         Cadastre e gerencie o cardápio de {estabelecimento.nome}.
       </p>
+
+      {params?.excluido && (
+        <p className="animate-entrada mt-4 rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
+          Produto excluído.
+        </p>
+      )}
       <ListaProdutosPainel estabelecimentoId={estabelecimento.id} produtosIniciais={produtos} />
     </main>
   );

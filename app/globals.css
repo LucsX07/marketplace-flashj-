@@ -14,6 +14,10 @@
   --brand-hover: #00823c;
   --brand-tint: #e2f5ea;
   --on-brand: #ffffff;
+  /* Texto sobre o vermelho de alerta. Inverte no escuro pelo mesmo motivo
+     do --on-brand: branco sobre o vermelho claro do tema escuro não
+     alcança contraste AA (3,5:1). Com o tom escuro, dá 5,3:1. */
+  --on-warn: #ffffff;
 
   --warn: #b23a2e;
   --warn-tint: #f7e6e3;
@@ -40,6 +44,7 @@
     --brand-hover: #22cc6a;
     --brand-tint: #10301f;
     --on-brand: #06170e;
+    --on-warn: #101312;
 
     --warn: #e2604a;
     --warn-tint: #351f1b;
@@ -67,6 +72,7 @@
   --brand-hover: #22cc6a;
   --brand-tint: #10301f;
   --on-brand: #06170e;
+  --on-warn: #101312;
 
   --warn: #e2604a;
   --warn-tint: #351f1b;
@@ -90,6 +96,7 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-tint: var(--brand-tint);
   --color-on-brand: var(--on-brand);
+  --color-on-warn: var(--on-warn);
 
   --color-warn: var(--warn);
   --color-warn-tint: var(--warn-tint);

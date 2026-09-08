@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import {
   atualizarProduto,
   criarAtributo,
@@ -11,9 +11,10 @@ import {
   removerValorOpcao,
   atualizarImagemProduto,
   removerImagemProduto,
+  excluirProduto,
 } from "@/lib/actions/produtos";
 import { formatarPreco } from "@/lib/formatar";
-import { BOTAO_PRIMARIO, BOTAO_SECUNDARIO, CAMPO, CARTAO } from "@/lib/ui";
+import { BOTAO_DESTRUTIVO, BOTAO_PRIMARIO, BOTAO_SECUNDARIO, CAMPO, CARTAO } from "@/lib/ui";
 import UploadImagem from "@/components/UploadImagem";
 
 const estadoInicial = { erro: null };
@@ -418,6 +419,69 @@ function SecaoOpcoes({ produto, sugestoes }) {
   );
 }
 
+// Excluir é a única ação daqui que não dá pra desfazer, então fica separada
+// do resto, no fim da página, e em dois toques: o primeiro só revela o
+// aviso, o segundo é que apaga. Num celular, um botão "Excluir" solto no
+// meio do formulário seria toque errado esperando pra acontecer.
+function SecaoExcluir({ produto }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [erro, setErro] = useState(null);
+  const [pendente, iniciarTransicao] = useTransition();
+
+  function excluir() {
+    setErro(null);
+    iniciarTransicao(async () => {
+      // Em caso de sucesso a action redireciona e nada volta pra cá.
+      const resultado = await excluirProduto(produto.id);
+      if (resultado?.erro) {
+        setErro(resultado.erro);
+        setConfirmando(false);
+      }
+    });
+  }
+
+  return (
+    <div className={`${CARTAO} animate-entrada mt-4 border-warn/40 p-4`}>
+      <h2 className="font-semibold text-ink">Excluir produto</h2>
+      <p className="mt-1 text-sm text-ink-muted">
+        Apaga {produto.nome} e tudo que está junto dele — atributos, opções e
+        variações. Não dá pra desfazer.
+      </p>
+
+      {erro && <p className="animate-entrada mt-3 text-sm text-warn">{erro}</p>}
+
+      {confirmando ? (
+        <div className="animate-entrada mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={excluir}
+            disabled={pendente}
+            className={BOTAO_DESTRUTIVO}
+          >
+            {pendente ? "Excluindo..." : "Sim, excluir para sempre"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmando(false)}
+            disabled={pendente}
+            className={`${BOTAO_SECUNDARIO} text-sm`}
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmando(true)}
+          className="mt-3 text-sm font-medium text-warn transition-transform duration-150 ease-out active:scale-[0.97]"
+        >
+          Excluir este produto
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function FormularioProdutoDetalhado({ produto, sugestoes }) {
   return (
     <>
@@ -425,6 +489,7 @@ export default function FormularioProdutoDetalhado({ produto, sugestoes }) {
       <SecaoBase produto={produto} />
       <SecaoAtributos produto={produto} sugestoes={sugestoes} />
       <SecaoOpcoes produto={produto} sugestoes={sugestoes} />
+      <SecaoExcluir produto={produto} />
     </>
   );
 }

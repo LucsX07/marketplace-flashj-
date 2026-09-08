@@ -9,6 +9,7 @@ import {
 import FormularioEstabelecimento from "../FormularioEstabelecimento";
 import UploadImagem from "@/components/UploadImagem";
 import AbrirFecharLoja from "./AbrirFecharLoja";
+import DesativarLoja from "./DesativarLoja";
 
 export default async function EditarLoja() {
   const estabelecimento = await buscarMeuEstabelecimento();
@@ -47,6 +48,8 @@ export default async function EditarLoja() {
       </div>
 
       <FormularioEstabelecimento categorias={categorias} estabelecimento={estabelecimento} />
+
+      <DesativarLoja estabelecimentoId={estabelecimento.id} ativo={estabelecimento.ativo} />
     </main>
   );
 }
