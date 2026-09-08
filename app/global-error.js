@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
+import { avisarErroDoNavegador } from "@/lib/avisar-erro-do-navegador";
+
 // Cobre erros que acontecem no próprio layout raiz (ex.: Supabase não
 // configurado ainda) — app/error.js sozinho não alcança esse caso. Como
 // isso substitui todo o <html>/<body>, o CSS do app não é carregado aqui,
 // então o estilo (incluindo modo escuro) vem embutido neste componente.
 export default function ErroGlobalRaiz({ error, reset }) {
+  useEffect(() => {
+    avisarErroDoNavegador("global-error", error);
+  }, [error]);
+
   const naoConfigurado = error?.message?.includes("Supabase não configurado");
 
   return (

@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
+import { avisarErroDoNavegador } from "@/lib/avisar-erro-do-navegador";
 import { BOTAO_PRIMARIO } from "@/lib/ui";
 
-export default function ErroEdicaoProduto({ reset }) {
+export default function ErroEdicaoProduto({ error, reset }) {
+  useEffect(() => {
+    avisarErroDoNavegador("(painel)/painel/produtos/[id]", error);
+  }, [error]);
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">
       <h1 className="font-display text-xl font-extrabold tracking-tight text-ink">

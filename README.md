@@ -92,3 +92,23 @@ npm run dev
 
 Depois acesse http://localhost:3000 (veja "Configurar o Supabase" acima —
 sem isso o app mostra uma tela de aviso em vez das páginas reais).
+
+## Quando algo dá errado em produção
+
+Todo erro do app vira uma linha de log em JSON com o marcador
+`FLASHJA_ERRO` (ver `lib/registrar-erro.js`). O usuário continua vendo só
+a mensagem amigável — o detalhe técnico vai pro log.
+
+Pra ler no Vercel: **projeto → Logs → Runtime Logs**, e busque por
+`FLASHJA_ERRO`. Cada linha traz:
+
+- `onde` — o nome da action ou da tela (ex.: `criarProduto`, `navegador`)
+- `mensagem`, `codigo`, `detalhe`, `dica` — o que o Supabase devolveu
+- ids curtos de contexto (produto, loja, pedido). Nunca e-mail, senha,
+  telefone ou endereço: log é lido por gente e fica guardado.
+
+Erro que quebra uma tela no navegador não chegaria no servidor sozinho.
+As telas de erro (`error.js`) mandam ele pra `/api/erro`, que registra
+com `onde: "navegador"`. Em produção a mensagem do React vem minificada,
+mas o campo `digest` é o mesmo do erro que o Next registrou no servidor —
+é por ele que se acha a causa real.

@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
+import { avisarErroDoNavegador } from "@/lib/avisar-erro-do-navegador";
 import { BOTAO_PRIMARIO } from "@/lib/ui";
 
 export default function ErroGlobal({ error, reset }) {
+  useEffect(() => {
+    avisarErroDoNavegador("app/error", error);
+  }, [error]);
+
   const naoConfigurado = error?.message?.includes("Supabase não configurado");
 
   return (
