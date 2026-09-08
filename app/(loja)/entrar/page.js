@@ -11,18 +11,39 @@ const estadoInicial = { erro: null };
 function FormularioEntrar() {
   const searchParams = useSearchParams();
   const proximo = searchParams.get("proximo") || "/";
+  const linkInvalido = searchParams.get("link") === "invalido";
   const [estado, formAction, pendente] = useActionState(entrar, estadoInicial);
 
   return (
     <form action={formAction} className="mt-6 space-y-4">
+      {linkInvalido && (
+        <p className="animate-entrada rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
+          Esse link de e-mail expirou ou já foi usado. Entre com sua senha ou peça um novo.
+        </p>
+      )}
+
       <input type="hidden" name="proximo" value={proximo} />
       <div>
         <label className="block text-sm font-medium text-ink">E-mail</label>
         <input type="email" name="email" required className={CAMPO} />
       </div>
       <div>
-        <label className="block text-sm font-medium text-ink">Senha</label>
-        <input type="password" name="senha" required className={CAMPO} />
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="senha" className="block text-sm font-medium text-ink">
+            Senha
+          </label>
+          <Link href="/esqueci-senha" className={`${LINK_MARCA} text-sm`}>
+            Esqueci minha senha
+          </Link>
+        </div>
+        <input
+          id="senha"
+          type="password"
+          name="senha"
+          required
+          autoComplete="current-password"
+          className={CAMPO}
+        />
       </div>
 
       {estado?.erro && <p className="animate-entrada text-sm text-warn">{estado.erro}</p>}

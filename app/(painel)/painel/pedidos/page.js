@@ -30,7 +30,7 @@ export default async function PainelPedidos() {
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
         Pedidos recebidos
       </h1>
-      <ListaPedidosPainel pedidosIniciais={pedidos} />
+      <ListaPedidosPainel pedidos={pedidos} estabelecimentoId={estabelecimento.id} />
     </main>
   );
 }

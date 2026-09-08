@@ -32,7 +32,7 @@ export default function CheckoutForm() {
     const estabelecimentoId = itens[0]?.estabelecimento_id;
 
     iniciarTransicao(async () => {
-      const resultado = await criarPedido(itens, estabelecimentoId, total);
+      const resultado = await criarPedido(itens, estabelecimentoId);
 
       if (resultado.erro) {
         setErro(resultado.erro);

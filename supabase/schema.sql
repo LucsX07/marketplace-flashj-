@@ -276,8 +276,10 @@ create policy "pedidos: dono do pedido ou da loja ve" on public.pedidos
     or exists (select 1 from public.estabelecimentos e where e.id = estabelecimento_id and e.dono_id = auth.uid())
     or public.meu_tipo() = 'administrador'
   );
-create policy "pedidos: consumidor cria" on public.pedidos
-  for insert with check (consumidor_id = auth.uid());
+-- NÃO existe policy de insert para consumidor aqui de propósito: pedido só
+-- nasce pela função public.criar_pedido (ver no fim do arquivo), que calcula
+-- o preço no banco. Sem isso, dava pra inserir um pedido com preço forjado
+-- chamando a API direto, sem passar pela tela.
 create policy "pedidos: comerciante atualiza status" on public.pedidos
   for update using (
     exists (select 1 from public.estabelecimentos e where e.id = estabelecimento_id and e.dono_id = auth.uid())
@@ -297,10 +299,7 @@ create policy "itens_pedido: segue o pedido" on public.itens_pedido
         )
     )
   );
-create policy "itens_pedido: consumidor cria junto do pedido" on public.itens_pedido
-  for insert with check (
-    exists (select 1 from public.pedidos p where p.id = pedido_id and p.consumidor_id = auth.uid())
-  );
+-- (sem insert direto — ver public.criar_pedido)
 
 -- item_pedido_opcoes: segue a visibilidade do item_pedido ao qual pertence ---
 create policy "item_pedido_opcoes: segue o pedido" on public.item_pedido_opcoes
@@ -316,14 +315,7 @@ create policy "item_pedido_opcoes: segue o pedido" on public.item_pedido_opcoes
         )
     )
   );
-create policy "item_pedido_opcoes: consumidor cria junto do pedido" on public.item_pedido_opcoes
-  for insert with check (
-    exists (
-      select 1 from public.itens_pedido ip
-      join public.pedidos pe on pe.id = ip.pedido_id
-      where ip.id = item_pedido_id and pe.consumidor_id = auth.uid()
-    )
-  );
+-- (sem insert direto — ver public.criar_pedido)
 
 -- pagamentos: mesma visibilidade do pedido. gateway_id/gateway_payload
 -- não são pedidos pelo app fora do papel administrador (ver lib/pedidos.js) --
@@ -339,10 +331,8 @@ create policy "pagamentos: segue o pedido" on public.pagamentos
         )
     )
   );
-create policy "pagamentos: consumidor cria junto do pedido" on public.pagamentos
-  for insert with check (
-    exists (select 1 from public.pedidos p where p.id = pedido_id and p.consumidor_id = auth.uid())
-  );
+-- (sem insert direto — ver public.criar_pedido; sem isso dava pra gravar
+--  um pagamento já com status 'aprovado' sem nunca ter pago)
 create policy "pagamentos: comerciante confirma retirada" on public.pagamentos
   for update using (
     exists (
@@ -398,3 +388,149 @@ create policy "imagens-produtos: dono gerencia" on storage.objects
         and (e.dono_id = auth.uid() or public.meu_tipo() = 'administrador')
     )
   );
+-- ============================================================
+-- Fase 1 da auditoria — item crítico #1 e #2
+-- Cria o pedido inteiro dentro do banco, numa única transação,
+-- calculando o preço a partir das tabelas. O cliente passa a mandar
+-- apenas O QUE quer comprar (produto + quantidade + opções escolhidas);
+-- QUANTO custa é decidido aqui, nunca aceito de fora.
+-- ============================================================
+
+create or replace function public.criar_pedido(
+  p_estabelecimento_id uuid,
+  p_itens jsonb
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_consumidor uuid := auth.uid();
+  v_pedido_id uuid;
+  v_item jsonb;
+  v_produto record;
+  v_obrigatoria record;
+  v_valor_ids uuid[];
+  v_preco_base numeric(10, 2);
+  v_ajuste numeric(10, 2);
+  v_preco_unitario numeric(10, 2);
+  v_quantidade integer;
+  v_subtotal numeric(10, 2);
+  v_total numeric(10, 2) := 0;
+  v_item_pedido_id uuid;
+begin
+  if v_consumidor is null then
+    raise exception 'Você precisa entrar na sua conta para finalizar o pedido.';
+  end if;
+
+  if p_itens is null or jsonb_array_length(p_itens) = 0 then
+    raise exception 'O pedido não tem nenhum item.';
+  end if;
+
+  -- A loja precisa existir, estar ativa e aberta agora.
+  perform 1 from public.estabelecimentos
+   where id = p_estabelecimento_id and ativo and aberto_agora;
+  if not found then
+    raise exception 'Esta loja não está aceitando pedidos no momento.';
+  end if;
+
+  insert into public.pedidos (consumidor_id, estabelecimento_id, total)
+  values (v_consumidor, p_estabelecimento_id, 0)
+  returning id into v_pedido_id;
+
+  for v_item in select value from jsonb_array_elements(p_itens)
+  loop
+    v_quantidade := coalesce((v_item ->> 'quantidade')::integer, 0);
+    if v_quantidade <= 0 then
+      raise exception 'Quantidade inválida em um dos itens.';
+    end if;
+
+    -- O produto precisa ser desta loja e estar disponível.
+    select p.id, p.preco, p.preco_promocional
+      into v_produto
+      from public.produtos p
+     where p.id = (v_item ->> 'produto_id')::uuid
+       and p.estabelecimento_id = p_estabelecimento_id
+       and p.disponivel;
+    if not found then
+      raise exception 'Um dos produtos não está mais disponível.';
+    end if;
+
+    v_preco_base := coalesce(v_produto.preco_promocional, v_produto.preco);
+
+    select coalesce(array_agg(elem::uuid), '{}'::uuid[])
+      into v_valor_ids
+      from jsonb_array_elements_text(coalesce(v_item -> 'valor_ids', '[]'::jsonb)) as elem;
+
+    -- Soma só os ajustes de valores que realmente pertencem a este produto —
+    -- id de opção de outro produto é simplesmente ignorado.
+    select coalesce(sum(v.ajuste_preco), 0)
+      into v_ajuste
+      from public.produto_opcao_valores v
+      join public.produto_opcoes o on o.id = v.opcao_id
+     where v.id = any(v_valor_ids)
+       and o.produto_id = v_produto.id;
+
+    -- Toda opção obrigatória precisa ter pelo menos um valor escolhido.
+    for v_obrigatoria in
+      select o.id from public.produto_opcoes o
+       where o.produto_id = v_produto.id and o.obrigatoria
+    loop
+      perform 1 from public.produto_opcao_valores v
+       where v.opcao_id = v_obrigatoria.id and v.id = any(v_valor_ids);
+      if not found then
+        raise exception 'Faltou escolher uma opção obrigatória de um dos produtos.';
+      end if;
+    end loop;
+
+    v_preco_unitario := v_preco_base + v_ajuste;
+    v_subtotal := v_preco_unitario * v_quantidade;
+    v_total := v_total + v_subtotal;
+
+    insert into public.itens_pedido (pedido_id, produto_id, quantidade, preco_unitario, subtotal)
+    values (v_pedido_id, v_produto.id, v_quantidade, v_preco_unitario, v_subtotal)
+    returning id into v_item_pedido_id;
+
+    -- Congela nome e ajuste das opções escolhidas (mesmo raciocínio do preco_unitario).
+    insert into public.item_pedido_opcoes (item_pedido_id, nome_opcao, nome_valor, ajuste_preco)
+    select v_item_pedido_id, o.nome, v.nome, v.ajuste_preco
+      from public.produto_opcao_valores v
+      join public.produto_opcoes o on o.id = v.opcao_id
+     where v.id = any(v_valor_ids)
+       and o.produto_id = v_produto.id;
+  end loop;
+
+  update public.pedidos set total = v_total where id = v_pedido_id;
+
+  insert into public.pagamentos (pedido_id, metodo, status, valor)
+  values (v_pedido_id, 'retirada', 'pendente', v_total);
+
+  return v_pedido_id;
+end;
+$$;
+
+revoke all on function public.criar_pedido(uuid, jsonb) from public, anon;
+grant execute on function public.criar_pedido(uuid, jsonb) to authenticated;
+
+-- Funções de gatilho: rodam sozinhas quando algo acontece no banco, ninguém
+-- deveria chamá-las pela API. O Postgres confere a permissão na hora de criar
+-- o gatilho, não na hora que ele dispara, então revogar aqui não quebra nada.
+revoke execute on function public.lidar_novo_usuario() from public, anon, authenticated;
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+
+-- ============================================================
+-- Fecha a porta antiga: sem estas policies, ninguém consegue mais
+-- inserir pedido/item/opção/pagamento direto pela API — só através da
+-- função acima, que calcula o preço sozinha.
+-- ============================================================
+drop policy if exists "pedidos: consumidor cria" on public.pedidos;
+drop policy if exists "itens_pedido: consumidor cria junto do pedido" on public.itens_pedido;
+drop policy if exists "item_pedido_opcoes: consumidor cria junto do pedido" on public.item_pedido_opcoes;
+drop policy if exists "pagamentos: consumidor cria junto do pedido" on public.pagamentos;
+
+-- ============================================================
+-- Realtime: o painel do comerciante precisa saber na hora que
+-- chegou pedido novo, sem recarregar a página.
+-- ============================================================
+alter publication supabase_realtime add table public.pedidos;

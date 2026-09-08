@@ -5,7 +5,8 @@ import { sair } from "@/lib/actions/auth";
 import SeletorDeTema from "@/components/SeletorDeTema";
 import { CARTAO, CARTAO_INTERATIVO, LINK_MARCA } from "@/lib/ui";
 
-export default async function PaginaPerfil() {
+export default async function PaginaPerfil({ searchParams }) {
+  const params = await searchParams;
   const supabase = await criarClienteServidor();
   const {
     data: { user },
@@ -28,6 +29,12 @@ export default async function PaginaPerfil() {
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
         Olá, {usuario?.nome}
       </h1>
+
+      {params?.senha_alterada && (
+        <p className="animate-entrada mt-4 rounded-md border border-brand bg-brand-tint p-3 text-sm font-medium text-brand">
+          Senha alterada com sucesso.
+        </p>
+      )}
 
       <div className="stagger mt-8 space-y-4">
         <Link href="/pedidos" className={`${CARTAO_INTERATIVO} animate-entrada block p-4`}>
