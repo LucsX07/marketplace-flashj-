@@ -4,6 +4,7 @@ import { useState, useActionState } from "react";
 import Link from "next/link";
 import { cadastrar } from "@/lib/actions/auth";
 import { BOTAO_PRIMARIO, CAMPO, LINK_MARCA } from "@/lib/ui";
+import ForcaDaSenha from "@/components/ForcaDaSenha";
 
 const estadoInicial = { erro: null, sucesso: false };
 
@@ -81,10 +82,7 @@ export default function FormularioCadastro({ categorias, tipoInicial }) {
           <label className="block text-sm font-medium text-ink">E-mail</label>
           <input type="email" name="email" required className={CAMPO} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-ink">Senha</label>
-          <input type="password" name="senha" required minLength={6} className={CAMPO} />
-        </div>
+        <ForcaDaSenha className={CAMPO} />
 
         {tipo === "comerciante" && (
           <div className="animate-entrada space-y-4 rounded-md border border-line bg-surface p-4">

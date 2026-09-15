@@ -7,6 +7,7 @@ import { CARTAO } from "@/lib/ui";
 import StatusBadge from "@/components/StatusBadge";
 import PedidoTimeline from "@/components/PedidoTimeline";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
+import EscutarMeuPedido from "./EscutarMeuPedido";
 
 export default async function PaginaPedido({ params, searchParams }) {
   const { id } = await params;
@@ -64,6 +65,7 @@ export default async function PaginaPedido({ params, searchParams }) {
           <div className="mt-4">
             <PedidoTimeline status={pedido.status} />
           </div>
+          <EscutarMeuPedido pedidoId={pedido.id} statusAtual={pedido.status} />
         </section>
 
         <section className={`${CARTAO} animate-entrada mt-4 p-4`}>

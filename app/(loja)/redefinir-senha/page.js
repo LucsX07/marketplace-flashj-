@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { redefinirSenha } from "@/lib/actions/auth";
 import { BOTAO_PRIMARIO, CAMPO, LINK_MARCA } from "@/lib/ui";
+import ForcaDaSenha from "@/components/ForcaDaSenha";
 
 const estadoInicial = { erro: null };
 
@@ -11,7 +12,10 @@ const estadoInicial = { erro: null };
 // o código por uma sessão. Quem entra direto na URL não tem sessão, e a
 // própria action devolve "seu link expirou" em vez de trocar senha de ninguém.
 export default function PaginaRedefinirSenha() {
-  const [estado, formAction, pendente] = useActionState(redefinirSenha, estadoInicial);
+  const [estado, formAction, pendente] = useActionState(
+    redefinirSenha,
+    estadoInicial,
+  );
 
   return (
     <main className="animate-entrada mx-auto max-w-sm px-4 py-16 sm:px-6">
@@ -21,22 +25,12 @@ export default function PaginaRedefinirSenha() {
       <p className="mt-1 text-sm text-ink-muted">Pelo menos 6 caracteres.</p>
 
       <form action={formAction} className="mt-6 space-y-4">
+        <ForcaDaSenha rotulo="Nova senha" className={CAMPO} />
         <div>
-          <label htmlFor="senha" className="block text-sm font-medium text-ink">
-            Nova senha
-          </label>
-          <input
-            id="senha"
-            type="password"
-            name="senha"
-            required
-            minLength={6}
-            autoComplete="new-password"
-            className={CAMPO}
-          />
-        </div>
-        <div>
-          <label htmlFor="confirmacao" className="block text-sm font-medium text-ink">
+          <label
+            htmlFor="confirmacao"
+            className="block text-sm font-medium text-ink"
+          >
             Repita a nova senha
           </label>
           <input
@@ -59,7 +53,11 @@ export default function PaginaRedefinirSenha() {
           </div>
         )}
 
-        <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} w-full`}>
+        <button
+          type="submit"
+          disabled={pendente}
+          className={`${BOTAO_PRIMARIO} w-full`}
+        >
           {pendente ? "Salvando..." : "Salvar nova senha"}
         </button>
       </form>

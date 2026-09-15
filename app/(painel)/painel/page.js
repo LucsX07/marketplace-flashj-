@@ -83,7 +83,7 @@ export default async function PainelInicial() {
           className={`${CARTAO} animate-entrada mt-6 grid grid-cols-3 divide-x divide-line`}
         >
           <div className="p-4 text-center">
-            <p className="font-display text-2xl font-extrabold text-ink">
+            <p className="font-display text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
               {pedidosHoje}
             </p>
             <p className="mt-1 text-xs text-ink-muted">
@@ -91,13 +91,15 @@ export default async function PainelInicial() {
             </p>
           </div>
           <div className="p-4 text-center">
-            <p className="font-display text-2xl font-extrabold text-ink">
+            {/* Menor no celular e com tabular-nums: um valor de 4 dígitos
+                (R$ 1.234,00) quebrava linha de forma feia em telas de 375px. */}
+            <p className="font-display text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
               {formatarPreco(receitaHoje)}
             </p>
             <p className="mt-1 text-xs text-ink-muted">hoje</p>
           </div>
           <div className="p-4 text-center">
-            <p className="font-display text-2xl font-extrabold text-ink">
+            <p className="font-display text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
               {produtos.length}
             </p>
             <p className="mt-1 text-xs text-ink-muted">
