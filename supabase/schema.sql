@@ -534,3 +534,79 @@ drop policy if exists "pagamentos: consumidor cria junto do pedido" on public.pa
 -- chegou pedido novo, sem recarregar a página.
 -- ============================================================
 alter publication supabase_realtime add table public.pedidos;
+
+-- ============================================================
+-- Exclusão de conta pelo próprio usuário.
+--
+-- O dilema: pedidos.consumidor_id aponta pra usuarios com NO ACTION, e
+-- estabelecimentos tem pedidos apontando pra ele também. Ou seja, apagar
+-- uma conta com histórico destruiria o registro de vendas do comerciante
+-- (ou a nota do consumidor). Por isso há dois caminhos:
+--
+--   sem histórico  -> apaga de verdade, a linha some de auth.users
+--   com histórico  -> anonimiza: o pedido continua existindo, mas não
+--                     aponta mais pra uma pessoa identificável, e o login
+--                     é desligado de vez
+--
+-- Nos dois casos o e-mail volta a ficar livre pra um cadastro novo.
+--
+-- É security definer porque mexe em auth.users, que o usuário comum não
+-- alcança. Por isso a primeira coisa que faz é fixar quem está chamando
+-- em auth.uid() — nunca recebe id por parâmetro, senão daria pra excluir a
+-- conta de outra pessoa.
+-- ============================================================
+create or replace function public.excluir_minha_conta()
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := auth.uid();
+  v_tem_historico boolean;
+begin
+  if v_id is null then
+    raise exception 'Você precisa estar logado.';
+  end if;
+
+  select
+    exists (select 1 from public.pedidos where consumidor_id = v_id)
+    or exists (
+      select 1 from public.pedidos p
+      join public.estabelecimentos e on e.id = p.estabelecimento_id
+      where e.dono_id = v_id
+    )
+  into v_tem_historico;
+
+  if not v_tem_historico then
+    delete from auth.users where id = v_id;
+    return 'excluida';
+  end if;
+
+  -- Loja sem dono não pode continuar recebendo pedido.
+  update public.estabelecimentos set ativo = false where dono_id = v_id;
+
+  update public.usuarios
+    set nome = 'Conta removida', telefone = null
+    where id = v_id;
+
+  -- O e-mail é trocado por um endereço impossível de existir (.invalid é
+  -- reservado justamente pra isso) em vez de apagado: a coluna tem índice
+  -- único e null em massa complicaria. Junto disso, senha zerada e
+  -- banned_until no infinito — é o que o Supabase checa pra recusar login.
+  update auth.users
+    set email = 'removido-' || v_id || '@conta-excluida.invalid',
+        encrypted_password = null,
+        email_confirmed_at = null,
+        phone = null,
+        raw_user_meta_data = '{}'::jsonb,
+        banned_until = 'infinity'::timestamptz,
+        updated_at = now()
+    where id = v_id;
+
+  return 'anonimizada';
+end;
+$$;
+
+revoke all on function public.excluir_minha_conta() from public, anon;
+grant execute on function public.excluir_minha_conta() to authenticated;

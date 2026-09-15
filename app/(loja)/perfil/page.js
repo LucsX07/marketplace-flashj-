@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { sair } from "@/lib/actions/auth";
 import SeletorDeTema from "@/components/SeletorDeTema";
+import FormularioPerfil from "./FormularioPerfil";
+import ExcluirConta from "./ExcluirConta";
 import { CARTAO, CARTAO_INTERATIVO, LINK_MARCA } from "@/lib/ui";
 
 export default async function PaginaPerfil({ searchParams }) {
@@ -18,7 +20,7 @@ export default async function PaginaPerfil({ searchParams }) {
 
   const { data: usuario } = await supabase
     .from("usuarios")
-    .select("nome, tipo")
+    .select("nome, telefone, tipo")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -51,9 +53,13 @@ export default async function PaginaPerfil({ searchParams }) {
           </Link>
         )}
 
+        <FormularioPerfil nome={usuario?.nome} telefone={usuario?.telefone} />
+
         <div className={`${CARTAO} animate-entrada p-4`}>
           <SeletorDeTema />
         </div>
+
+        <ExcluirConta />
 
         <form action={sair} className="animate-entrada pt-2">
           <button type="submit" className={LINK_MARCA}>

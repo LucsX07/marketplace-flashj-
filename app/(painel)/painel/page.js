@@ -8,6 +8,7 @@ import { criarEstabelecimentoAutomatico } from "@/lib/actions/estabelecimentos";
 import { formatarPreco } from "@/lib/formatar";
 import { CARTAO, CARTAO_INTERATIVO } from "@/lib/ui";
 import FormularioEstabelecimento from "./FormularioEstabelecimento";
+import PrimeirosPassos from "./PrimeirosPassos";
 
 function saudacaoPorHorario() {
   const hora = new Date().getHours();
@@ -56,6 +57,14 @@ export default async function PainelInicial() {
     listarTodosProdutosDoEstabelecimento(estabelecimento.id),
   ]);
 
+  // Os números do dia só fazem sentido depois que a loja está de pé. Antes
+  // disso ("0 pedidos, R$ 0,00, 0 produtos") eles não informam nada — o
+  // roteiro de primeiros passos ocupa o lugar deles.
+  const temProduto = produtos.length > 0;
+  const temCapa = Boolean(estabelecimento.capa_url);
+  const estaAberta = Boolean(estabelecimento.aberto_agora);
+  const faltaAlgumPasso = !temProduto || !temCapa || !estaAberta;
+
   return (
     <main className="animate-entrada mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
@@ -63,41 +72,64 @@ export default async function PainelInicial() {
       </h1>
       <p className="mt-1 text-ink-muted">{estabelecimento.nome}</p>
 
-      <div className={`${CARTAO} animate-entrada mt-6 grid grid-cols-3 divide-x divide-line`}>
-        <div className="p-4 text-center">
-          <p className="font-display text-2xl font-extrabold text-ink">{pedidosHoje}</p>
-          <p className="mt-1 text-xs text-ink-muted">
-            {pedidosHoje === 1 ? "pedido hoje" : "pedidos hoje"}
-          </p>
+      {faltaAlgumPasso ? (
+        <PrimeirosPassos
+          temProduto={temProduto}
+          temCapa={temCapa}
+          estaAberta={estaAberta}
+        />
+      ) : (
+        <div
+          className={`${CARTAO} animate-entrada mt-6 grid grid-cols-3 divide-x divide-line`}
+        >
+          <div className="p-4 text-center">
+            <p className="font-display text-2xl font-extrabold text-ink">
+              {pedidosHoje}
+            </p>
+            <p className="mt-1 text-xs text-ink-muted">
+              {pedidosHoje === 1 ? "pedido hoje" : "pedidos hoje"}
+            </p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="font-display text-2xl font-extrabold text-ink">
+              {formatarPreco(receitaHoje)}
+            </p>
+            <p className="mt-1 text-xs text-ink-muted">hoje</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="font-display text-2xl font-extrabold text-ink">
+              {produtos.length}
+            </p>
+            <p className="mt-1 text-xs text-ink-muted">
+              {produtos.length === 1 ? "produto" : "produtos"}
+            </p>
+          </div>
         </div>
-        <div className="p-4 text-center">
-          <p className="font-display text-2xl font-extrabold text-ink">
-            {formatarPreco(receitaHoje)}
-          </p>
-          <p className="mt-1 text-xs text-ink-muted">hoje</p>
-        </div>
-        <div className="p-4 text-center">
-          <p className="font-display text-2xl font-extrabold text-ink">{produtos.length}</p>
-          <p className="mt-1 text-xs text-ink-muted">
-            {produtos.length === 1 ? "produto" : "produtos"}
-          </p>
-        </div>
-      </div>
+      )}
 
       <div className="stagger mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link href="/painel/pedidos" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
+        <Link
+          href="/painel/pedidos"
+          className={`${CARTAO_INTERATIVO} animate-entrada p-4`}
+        >
           <h2 className="font-display font-bold text-ink">Pedidos recebidos</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Aceite, recuse e atualize o status dos pedidos.
           </p>
         </Link>
-        <Link href="/painel/produtos" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
+        <Link
+          href="/painel/produtos"
+          className={`${CARTAO_INTERATIVO} animate-entrada p-4`}
+        >
           <h2 className="font-display font-bold text-ink">Produtos</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Gerencie o cardápio do seu estabelecimento.
           </p>
         </Link>
-        <Link href="/painel/loja" className={`${CARTAO_INTERATIVO} animate-entrada p-4`}>
+        <Link
+          href="/painel/loja"
+          className={`${CARTAO_INTERATIVO} animate-entrada p-4`}
+        >
           <h2 className="font-display font-bold text-ink">Minha loja</h2>
           <p className="mt-1 text-sm text-ink-muted">
             Capa, dados da loja e se está aberta agora.
