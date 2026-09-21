@@ -5,12 +5,16 @@ import Link from "next/link";
 import { cadastrar } from "@/lib/actions/auth";
 import { BOTAO_PRIMARIO, CAMPO, LINK_MARCA } from "@/lib/ui";
 import ForcaDaSenha from "@/components/ForcaDaSenha";
+import BotaoGoogle from "@/components/BotaoGoogle";
 
 const estadoInicial = { erro: null, sucesso: false };
 
 export default function FormularioCadastro({ categorias, tipoInicial }) {
   const [tipo, setTipo] = useState(tipoInicial);
-  const [estado, formAction, pendente] = useActionState(cadastrar, estadoInicial);
+  const [estado, formAction, pendente] = useActionState(
+    cadastrar,
+    estadoInicial,
+  );
 
   if (estado?.sucesso) {
     return (
@@ -47,10 +51,14 @@ export default function FormularioCadastro({ categorias, tipoInicial }) {
           type="button"
           onClick={() => setTipo("consumidor")}
           className={`rounded-md border p-4 text-left transition-colors duration-150 ${
-            tipo === "consumidor" ? "border-brand bg-brand-tint" : "border-line bg-surface"
+            tipo === "consumidor"
+              ? "border-brand bg-brand-tint"
+              : "border-line bg-surface"
           }`}
         >
-          <span className="block font-display font-bold text-ink">🛍️ Comprar</span>
+          <span className="block font-display font-bold text-ink">
+            🛍️ Comprar
+          </span>
           <span className="mt-1 block text-xs text-ink-muted">
             Encontre produtos da sua cidade.
           </span>
@@ -59,15 +67,28 @@ export default function FormularioCadastro({ categorias, tipoInicial }) {
           type="button"
           onClick={() => setTipo("comerciante")}
           className={`rounded-md border p-4 text-left transition-colors duration-150 ${
-            tipo === "comerciante" ? "border-brand bg-brand-tint" : "border-line bg-surface"
+            tipo === "comerciante"
+              ? "border-brand bg-brand-tint"
+              : "border-line bg-surface"
           }`}
         >
-          <span className="block font-display font-bold text-ink">🏪 Vender</span>
+          <span className="block font-display font-bold text-ink">
+            🏪 Vender
+          </span>
           <span className="mt-1 block text-xs text-ink-muted">
             Leve seu negócio pra FlashJá.
           </span>
         </button>
       </div>
+
+      {/* Só pra quem vem comprar: o cadastro de comerciante precisa de
+          telefone, nome da loja, cidade e categoria, que a conta Google não
+          tem. Ver o comentário em entrarComGoogle. */}
+      {tipo === "consumidor" && (
+        <div className="mt-6">
+          <BotaoGoogle rotulo="Criar conta com o Google" />
+        </div>
+      )}
 
       <form action={formAction} className="mt-6 space-y-4">
         <input type="hidden" name="tipo" value={tipo} />
@@ -90,19 +111,27 @@ export default function FormularioCadastro({ categorias, tipoInicial }) {
               Sobre o seu negócio
             </p>
             <div>
-              <label className="block text-sm font-medium text-ink">Telefone</label>
+              <label className="block text-sm font-medium text-ink">
+                Telefone
+              </label>
               <input name="telefone" required className={CAMPO} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink">Nome do estabelecimento</label>
+              <label className="block text-sm font-medium text-ink">
+                Nome do estabelecimento
+              </label>
               <input name="nome_estabelecimento" required className={CAMPO} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink">Cidade</label>
+              <label className="block text-sm font-medium text-ink">
+                Cidade
+              </label>
               <input name="cidade_estabelecimento" required className={CAMPO} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink">Categoria</label>
+              <label className="block text-sm font-medium text-ink">
+                Categoria
+              </label>
               <select name="categoria_id" required className={CAMPO}>
                 {categorias.map((categoria) => (
                   <option key={categoria.id} value={categoria.id}>
@@ -112,14 +141,21 @@ export default function FormularioCadastro({ categorias, tipoInicial }) {
               </select>
             </div>
             <p className="text-xs text-ink-faint">
-              Mais detalhes (descrição, produtos) você adiciona depois, no seu painel.
+              Mais detalhes (descrição, produtos) você adiciona depois, no seu
+              painel.
             </p>
           </div>
         )}
 
-        {estado?.erro && <p className="animate-entrada text-sm text-warn">{estado.erro}</p>}
+        {estado?.erro && (
+          <p className="animate-entrada text-sm text-warn">{estado.erro}</p>
+        )}
 
-        <button type="submit" disabled={pendente} className={`${BOTAO_PRIMARIO} w-full`}>
+        <button
+          type="submit"
+          disabled={pendente}
+          className={`${BOTAO_PRIMARIO} w-full`}
+        >
           {pendente
             ? "Criando conta..."
             : tipo === "comerciante"

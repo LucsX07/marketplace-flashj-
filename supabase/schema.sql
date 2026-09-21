@@ -151,7 +151,16 @@ begin
     case when new.raw_user_meta_data ->> 'tipo' = 'comerciante'
       then 'comerciante'::public.tipo_usuario
       else 'consumidor'::public.tipo_usuario end,
-    coalesce(nullif(trim(new.raw_user_meta_data ->> 'nome'), ''), new.email, 'Usuário'),
+    -- Login social manda o nome num campo diferente do nosso formulário: o
+    -- Google usa full_name (e name). Sem isso, quem entrasse com Google
+    -- ficaria chamado "fulano@gmail.com" no app inteiro.
+    coalesce(
+      nullif(trim(new.raw_user_meta_data ->> 'nome'), ''),
+      nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''),
+      nullif(trim(new.raw_user_meta_data ->> 'name'), ''),
+      new.email,
+      'Usuário'
+    ),
     new.raw_user_meta_data ->> 'telefone'
   );
   return new;

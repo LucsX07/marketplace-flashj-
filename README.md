@@ -112,3 +112,36 @@ As telas de erro (`error.js`) mandam ele pra `/api/erro`, que registra
 com `onde: "navegador"`. Em produção a mensagem do React vem minificada,
 mas o campo `digest` é o mesmo do erro que o Next registrou no servidor —
 é por ele que se acha a causa real.
+
+## Login com Google
+
+O código já está pronto, mas o botão só aparece quando a variável
+`NEXT_PUBLIC_LOGIN_GOOGLE=1` existe. Isso é proposital: entre publicar e
+configurar as credenciais, um botão que sempre falha é pior do que botão
+nenhum.
+
+Para ligar, três passos — os dois primeiros são fora deste repositório:
+
+**1. Google Cloud Console** (console.cloud.google.com)
+
+Crie um projeto, vá em *APIs e serviços → Credenciais → Criar credenciais →
+ID do cliente OAuth*, tipo *Aplicativo da Web*. Em **URIs de redirecionamento
+autorizados**, cole exatamente:
+
+```
+https://<SEU-PROJETO>.supabase.co/auth/v1/callback
+```
+
+Esse endereço é do Supabase, não do site. Quem recebe o retorno do Google é
+ele, que depois manda pro nosso `/auth/callback`. Guarde o *Client ID* e o
+*Client Secret*.
+
+**2. Supabase** → *Authentication → Providers → Google*: ligue e cole os dois
+valores.
+
+**3. Vercel** → *Settings → Environment Variables*: adicione
+`NEXT_PUBLIC_LOGIN_GOOGLE` com valor `1` e publique de novo.
+
+Só serve para quem vem comprar. O cadastro de comerciante pede telefone, nome
+da loja, cidade e categoria, que a conta Google não tem — por isso o botão
+some quando se escolhe "Vender".

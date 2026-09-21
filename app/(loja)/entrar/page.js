@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { entrar } from "@/lib/actions/auth";
 import { BOTAO_PRIMARIO, CAMPO, LINK_MARCA } from "@/lib/ui";
+import BotaoGoogle from "@/components/BotaoGoogle";
 
 const estadoInicial = { erro: null };
 
@@ -16,58 +17,67 @@ function FormularioEntrar() {
   const [estado, formAction, pendente] = useActionState(entrar, estadoInicial);
 
   return (
-    <form action={formAction} className="mt-6 space-y-4">
-      {conta && (
-        <p className="animate-entrada rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
-          {conta === "excluida"
-            ? "Sua conta foi excluída. Foi bom ter você por aqui."
-            : "Seus dados foram removidos e o acesso a esta conta foi encerrado. Os pedidos que você já fez seguem no histórico do estabelecimento, sem o seu nome."}
-        </p>
-      )}
-
-      {linkInvalido && (
-        <p className="animate-entrada rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
-          Esse link de e-mail expirou ou já foi usado. Entre com sua senha ou
-          peça um novo.
-        </p>
-      )}
-
-      <input type="hidden" name="proximo" value={proximo} />
-      <div>
-        <label className="block text-sm font-medium text-ink">E-mail</label>
-        <input type="email" name="email" required className={CAMPO} />
+    <>
+      <div className="mt-6">
+        <BotaoGoogle proximo={proximo} />
       </div>
-      <div>
-        <div className="flex items-baseline justify-between">
-          <label htmlFor="senha" className="block text-sm font-medium text-ink">
-            Senha
-          </label>
-          <Link href="/esqueci-senha" className={`${LINK_MARCA} text-sm`}>
-            Esqueci minha senha
-          </Link>
+
+      <form action={formAction} className="space-y-4">
+        {conta && (
+          <p className="animate-entrada rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
+            {conta === "excluida"
+              ? "Sua conta foi excluída. Foi bom ter você por aqui."
+              : "Seus dados foram removidos e o acesso a esta conta foi encerrado. Os pedidos que você já fez seguem no histórico do estabelecimento, sem o seu nome."}
+          </p>
+        )}
+
+        {linkInvalido && (
+          <p className="animate-entrada rounded-md border border-line bg-surface-2 p-3 text-sm text-ink-muted">
+            Esse link de e-mail expirou ou já foi usado. Entre com sua senha ou
+            peça um novo.
+          </p>
+        )}
+
+        <input type="hidden" name="proximo" value={proximo} />
+        <div>
+          <label className="block text-sm font-medium text-ink">E-mail</label>
+          <input type="email" name="email" required className={CAMPO} />
         </div>
-        <input
-          id="senha"
-          type="password"
-          name="senha"
-          required
-          autoComplete="current-password"
-          className={CAMPO}
-        />
-      </div>
+        <div>
+          <div className="flex items-baseline justify-between">
+            <label
+              htmlFor="senha"
+              className="block text-sm font-medium text-ink"
+            >
+              Senha
+            </label>
+            <Link href="/esqueci-senha" className={`${LINK_MARCA} text-sm`}>
+              Esqueci minha senha
+            </Link>
+          </div>
+          <input
+            id="senha"
+            type="password"
+            name="senha"
+            required
+            autoComplete="current-password"
+            className={CAMPO}
+          />
+        </div>
 
-      {estado?.erro && (
-        <p className="animate-entrada text-sm text-warn">{estado.erro}</p>
-      )}
+        {estado?.erro && (
+          <p className="animate-entrada text-sm text-warn">{estado.erro}</p>
+        )}
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className={`${BOTAO_PRIMARIO} w-full`}
-      >
-        {pendente ? "Entrando..." : "Entrar"}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={pendente}
+          className={`${BOTAO_PRIMARIO} w-full`}
+        >
+          {pendente ? "Entrando..." : "Entrar"}
+        </button>
+      </form>
+    </>
   );
 }
 
