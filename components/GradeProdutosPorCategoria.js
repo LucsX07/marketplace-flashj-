@@ -11,7 +11,10 @@ const TODOS = "Todos";
 // livre que o comerciante já preenche por produto) — sem taxonomia nova,
 // só agrupa o que já existe. Loja sem nenhum produto categorizado não
 // mostra abas nenhuma.
-export default function GradeProdutosPorCategoria({ produtos }) {
+export default function GradeProdutosPorCategoria({
+  produtos,
+  lojaFechada = false,
+}) {
   const categorias = useMemo(() => {
     const vistas = new Set();
     for (const produto of produtos) {
@@ -24,11 +27,16 @@ export default function GradeProdutosPorCategoria({ produtos }) {
 
   if (produtos.length === 0) {
     return (
-      <p className="mt-8 text-ink-muted">Este estabelecimento ainda não adicionou produtos.</p>
+      <p className="mt-8 text-ink-muted">
+        Este estabelecimento ainda não adicionou produtos.
+      </p>
     );
   }
 
-  const filtrados = ativa === TODOS ? produtos : produtos.filter((p) => p.categoria_produto === ativa);
+  const filtrados =
+    ativa === TODOS
+      ? produtos
+      : produtos.filter((p) => p.categoria_produto === ativa);
 
   return (
     <>
@@ -62,7 +70,11 @@ export default function GradeProdutosPorCategoria({ produtos }) {
           className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
         >
           {filtrados.map((produto) => (
-            <ProdutoCard key={produto.id} produto={produto} />
+            <ProdutoCard
+              key={produto.id}
+              produto={produto}
+              lojaFechada={lojaFechada}
+            />
           ))}
         </motion.div>
       </AnimatePresence>

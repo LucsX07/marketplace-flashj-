@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCarrinho } from "@/components/carrinho/CarrinhoContext";
 import { formatarPreco } from "@/lib/formatar";
@@ -9,7 +10,17 @@ import { ITEM_ENTRADA, TOQUE_BOTAO } from "@/lib/motion";
 import SeletorDeOpcoesProduto from "@/components/SeletorDeOpcoesProduto";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
-export default function ProdutoCard({ produto }) {
+// mostrarLoja: usado no resultado de busca, onde os produtos vêm de lojas
+// diferentes. Achar "caderno" sem saber em qual loja comprar não serve de
+// nada. Na vitrine de uma loja só, o nome seria repetição.
+// lojaFechada: com a loja fechada, o pedido é recusado pelo banco (a função
+// criar_pedido exige `aberto_agora`). Deixar o botão ativo levaria a pessoa a
+// montar o carrinho inteiro pra descobrir isso só no checkout.
+export default function ProdutoCard({
+  produto,
+  mostrarLoja = false,
+  lojaFechada = false,
+}) {
   const { adicionarItem } = useCarrinho();
   const [adicionado, setAdicionado] = useState(false);
   const [seletorAberto, setSeletorAberto] = useState(false);
@@ -46,15 +57,33 @@ export default function ProdutoCard({ produto }) {
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display line-clamp-2 font-bold text-ink">{produto.nome}</h3>
+          <h3 className="font-display line-clamp-2 font-bold text-ink">
+            {produto.nome}
+          </h3>
           {produto.em_destaque && (
             <span className="shrink-0 rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
               Destaque
             </span>
           )}
         </div>
+        {mostrarLoja && produto.estabelecimentos?.nome && (
+          <Link
+            href={`/estabelecimentos/${produto.estabelecimento_id}`}
+            className="mt-0.5 flex items-center gap-1 text-xs font-medium text-brand transition-colors duration-150 hover:text-brand-hover"
+          >
+            {produto.estabelecimentos.nome}
+            {produto.estabelecimentos.aberto_agora === false && (
+              <span className="font-normal text-ink-faint">
+                · fechada agora
+              </span>
+            )}
+          </Link>
+        )}
+
         {produto.descricao && (
-          <p className="line-clamp-2 text-sm text-ink-muted">{produto.descricao}</p>
+          <p className="line-clamp-2 text-sm text-ink-muted">
+            {produto.descricao}
+          </p>
         )}
 
         {produto.produto_atributos?.length > 0 && (
@@ -85,13 +114,23 @@ export default function ProdutoCard({ produto }) {
               formatarPreco(produto.preco)
             )}
           </span>
-          <motion.button
-            whileTap={TOQUE_BOTAO}
-            onClick={lidarComClique}
-            className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}
-          >
-            {adicionado ? "Adicionado ✓" : temOpcoes ? "Escolher" : "Adicionar"}
-          </motion.button>
+          {lojaFechada ? (
+            <span className="shrink-0 rounded-md bg-surface-2 px-3 py-1.5 text-sm font-medium text-ink-muted">
+              Loja fechada
+            </span>
+          ) : (
+            <motion.button
+              whileTap={TOQUE_BOTAO}
+              onClick={lidarComClique}
+              className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}
+            >
+              {adicionado
+                ? "Adicionado ✓"
+                : temOpcoes
+                  ? "Escolher"
+                  : "Adicionar"}
+            </motion.button>
+          )}
         </div>
       </div>
 

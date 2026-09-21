@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import EstabelecimentoCard from "@/components/EstabelecimentoCard";
 import ProdutoCard from "@/components/ProdutoCard";
-import { CAMPO } from "@/lib/ui";
 import { ITEM_ENTRADA, LISTA_ENTRADA } from "@/lib/motion";
 
 function agruparPorCategoria(estabelecimentos) {
@@ -19,37 +18,24 @@ function agruparPorCategoria(estabelecimentos) {
   return grupos;
 }
 
-// Busca simples: filtra por nome entre os estabelecimentos já carregados
-// dessa cidade — sem infraestrutura de busca nova, o catálogo por cidade
-// ainda é pequeno o suficiente pra isso ser instantâneo.
+// A busca saiu daqui: ela agora mora na URL e consulta o servidor, porque
+// precisa achar produto de qualquer loja — não dá pra filtrar no navegador
+// o que nunca foi carregado. Ver CampoDeBusca e ResultadosDaBusca.
 export default function VitrineCidade({ estabelecimentos, destaques }) {
-  const [busca, setBusca] = useState("");
-
-  const filtrados = useMemo(() => {
-    const termo = busca.trim().toLowerCase();
-    if (!termo) return estabelecimentos;
-    return estabelecimentos.filter((estabelecimento) =>
-      estabelecimento.nome.toLowerCase().includes(termo)
-    );
-  }, [busca, estabelecimentos]);
-
-  const grupos = useMemo(() => agruparPorCategoria(filtrados), [filtrados]);
+  const grupos = useMemo(
+    () => agruparPorCategoria(estabelecimentos),
+    [estabelecimentos],
+  );
 
   return (
     <>
-      <input
-        type="search"
-        value={busca}
-        onChange={(evento) => setBusca(evento.target.value)}
-        placeholder="O que você está procurando?"
-        className={`${CAMPO} mt-6 max-w-md`}
-      />
-
-      {destaques.length > 0 && !busca && (
+      {destaques.length > 0 && (
         <section className="mt-10 border-b border-line pb-10">
           <div className="flex items-center gap-2">
             <span className="h-4 w-1 rounded-full bg-brand" />
-            <h2 className="font-display text-xl font-bold text-ink">Destaques</h2>
+            <h2 className="font-display text-xl font-bold text-ink">
+              Destaques
+            </h2>
           </div>
           <motion.div
             variants={LISTA_ENTRADA}
@@ -64,7 +50,7 @@ export default function VitrineCidade({ estabelecimentos, destaques }) {
         </section>
       )}
 
-      {filtrados.length === 0 ? (
+      {estabelecimentos.length === 0 ? (
         <motion.div
           initial={ITEM_ENTRADA.oculto}
           animate={ITEM_ENTRADA.visivel}
@@ -72,15 +58,15 @@ export default function VitrineCidade({ estabelecimentos, destaques }) {
         >
           <div className="grid-texture pointer-events-none absolute inset-0" />
           <p className="relative text-ink-muted">
-            {busca
-              ? "Nada encontrado com esse nome."
-              : "A FlashJá ainda está chegando nessa cidade."}
+            A FlashJá ainda está chegando nessa cidade.
           </p>
         </motion.div>
       ) : (
         [...grupos.entries()].map(([nomeCategoria, itens]) => (
           <section key={nomeCategoria} className="mt-10">
-            <h2 className="font-display text-lg font-bold text-ink">{nomeCategoria}</h2>
+            <h2 className="font-display text-lg font-bold text-ink">
+              {nomeCategoria}
+            </h2>
             <motion.div
               variants={LISTA_ENTRADA}
               initial="oculto"
@@ -88,7 +74,10 @@ export default function VitrineCidade({ estabelecimentos, destaques }) {
               className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
             >
               {itens.map((estabelecimento) => (
-                <EstabelecimentoCard key={estabelecimento.id} estabelecimento={estabelecimento} />
+                <EstabelecimentoCard
+                  key={estabelecimento.id}
+                  estabelecimento={estabelecimento}
+                />
               ))}
             </motion.div>
           </section>

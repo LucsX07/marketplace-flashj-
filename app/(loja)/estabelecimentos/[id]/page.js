@@ -45,7 +45,10 @@ export default async function PaginaEstabelecimento({ params }) {
         </h1>
         <p className="mt-1 text-ink-muted">{estabelecimento.descricao}</p>
 
-        <GradeProdutosPorCategoria produtos={produtos} />
+        <GradeProdutosPorCategoria
+          produtos={produtos}
+          lojaFechada={!estabelecimento.aberto_agora}
+        />
       </div>
     </main>
   );
