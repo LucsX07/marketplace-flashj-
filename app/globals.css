@@ -22,6 +22,14 @@
   --warn: #b23a2e;
   --warn-tint: #f7e6e3;
 
+  /* Grafite: o bloco que ancora a página. Sem ele tudo flutua no bege e a
+     tela fica sem peso — era a queixa de "simples demais". Mesma família do
+     --ink (verde puxado pro neutro), só que clareado pra virar superfície.
+     O texto secundário aqui é tingido do próprio tom, nunca cinza puro. */
+  --graphite: #262b28;
+  --on-graphite: #f4f5f2;
+  --on-graphite-muted: #aab2ac;
+
   --shadow-card: 0 1px 2px rgba(16, 19, 18, 0.04), 0 3px 10px rgba(16, 19, 18, 0.07);
   --shadow-card-hover: 0 2px 4px rgba(16, 19, 18, 0.06), 0 10px 22px rgba(16, 19, 18, 0.1);
   --shadow-modal: 0 2px 6px rgba(16, 19, 18, 0.08), 0 12px 32px rgba(16, 19, 18, 0.14);
@@ -48,6 +56,12 @@
 
     --warn: #e2604a;
     --warn-tint: #351f1b;
+
+    /* No escuro o grafite sobe um degrau acima de --surface pra continuar
+       lendo como bloco, em vez de sumir no fundo. */
+    --graphite: #2c322e;
+    --on-graphite: #f3f4f1;
+    --on-graphite-muted: #9ba39d;
 
     /* Sombra preta soma pouco sobre fundo já escuro — em vez de tentar
        "escurecer mais", uso opacidade maior pra ainda separar as camadas. */
@@ -77,6 +91,10 @@
   --warn: #e2604a;
   --warn-tint: #351f1b;
 
+  --graphite: #2c322e;
+  --on-graphite: #f3f4f1;
+  --on-graphite-muted: #9ba39d;
+
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.38);
   --shadow-modal: 0 2px 6px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -101,6 +119,10 @@
   --color-warn: var(--warn);
   --color-warn-tint: var(--warn-tint);
 
+  --color-graphite: var(--graphite);
+  --color-on-graphite: var(--on-graphite);
+  --color-on-graphite-muted: var(--on-graphite-muted);
+
   --font-display: var(--font-archivo);
   --font-sans: var(--font-public-sans);
 }
@@ -110,22 +132,73 @@ body {
   color: var(--ink);
 }
 
+/* ============================================================
+   Superfícies que o navegador desenha por conta própria.
+   Seleção, cursor, anel de foco e barra de rolagem vêm com o padrão do
+   sistema e não pertencem a design system nenhum — deixar assim é o que
+   faz uma tela parecer montada em vez de construída. Tudo aqui sai da
+   mesma paleta do resto.
+   ============================================================ */
+
+::selection {
+  background: var(--brand-tint);
+  color: var(--ink);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--brand);
+}
+
+/* Um anel só, com afastamento, em qualquer coisa navegável por teclado —
+   inclusive nos elementos que não recebem estilo de foco próprio. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+html {
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  background-color: var(--line-strong);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ink-faint);
+}
+
+/* Preço e quantidade alinham coluna a coluna numa lista. Sem isso, "R$ 19,90"
+   e "R$ 9,90" dançam no eixo vertical. */
+.numerico {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Pequeno detalhe geométrico (nod discreto a acid wave/synthwave): um corte
    diagonal no canto do botão principal, sem glow nem gradiente. */
 .corner-cut {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
 }
 
-/* Textura de grade bem sutil, usada com opacidade mínima em áreas vazias
-   (herói/empty state) — referência discreta à estética retrô, nunca a ponto
-   de atrapalhar a leitura. */
-.grid-texture {
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.35;
-}
+/* A textura de grade saiu daqui. Era o único achado do detector e o piso de
+   qualidade é explícito: grade de fundo pede uma tela de desenho, um mapa ou
+   uma planta por baixo. Num estado vazio ela era só enfeite — e enfeite de
+   gerador. O vazio agora se sustenta com texto e espaço. */
 
 /* ============================================================
    Microanimações — rápidas, discretas, e desligadas de vez para

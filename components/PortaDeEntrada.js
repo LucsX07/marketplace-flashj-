@@ -24,7 +24,6 @@ export default function PortaDeEntrada() {
       </p>
 
       <div className="relative mt-10 overflow-hidden rounded-md border border-line bg-surface p-6 text-left">
-        <div className="grid-texture pointer-events-none absolute inset-0" />
         <div className="relative">
           <h2 className="font-display font-bold text-ink">Onde você está?</h2>
           <p className="mt-1 text-sm text-ink-muted">

@@ -27,7 +27,6 @@ export default async function PaginaMeusPedidos() {
 
       {pedidos.length === 0 ? (
         <div className="animate-entrada relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center">
-          <div className="grid-texture pointer-events-none absolute inset-0" />
           <div className="relative flex flex-col items-center">
             <BrandMark className="h-10 w-10 text-brand" />
             <p className="mt-4 font-display font-bold text-ink">

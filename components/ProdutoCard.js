@@ -10,16 +10,38 @@ import { ITEM_ENTRADA, TOQUE_BOTAO } from "@/lib/motion";
 import SeletorDeOpcoesProduto from "@/components/SeletorDeOpcoesProduto";
 import ImagemComPlaceholder from "@/components/ImagemComPlaceholder";
 
+// Visto desenhado em vez do caractere ✓. Glifo unicode no lugar de ícone
+// herda a fonte do sistema: muda de forma e de peso conforme o aparelho, e
+// nunca alinha com o resto. Este acompanha o traço do texto ao lado.
+function IconeVisto() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3.5 w-3.5">
+      <path
+        d="M3.5 8.5l3 3 6-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // mostrarLoja: usado no resultado de busca, onde os produtos vêm de lojas
 // diferentes. Achar "caderno" sem saber em qual loja comprar não serve de
 // nada. Na vitrine de uma loja só, o nome seria repetição.
 // lojaFechada: com a loja fechada, o pedido é recusado pelo banco (a função
 // criar_pedido exige `aberto_agora`). Deixar o botão ativo levaria a pessoa a
 // montar o carrinho inteiro pra descobrir isso só no checkout.
+// ocultarDestaque: dentro da seção "Em destaque" o selo repete o título da
+// seção e, num card estreito de celular, ele ainda espremia o nome do produto
+// até sobrar "Caderno 10…". Fora dali (na página da loja) o selo informa.
 export default function ProdutoCard({
   produto,
   mostrarLoja = false,
   lojaFechada = false,
+  ocultarDestaque = false,
 }) {
   const { adicionarItem } = useCarrinho();
   const [adicionado, setAdicionado] = useState(false);
@@ -52,7 +74,8 @@ export default function ProdutoCard({
       <ImagemComPlaceholder
         src={produto.imagem_url}
         alt={produto.nome}
-        className="h-36 w-full"
+        nome={produto.nome}
+        className="aspect-[4/3] w-full"
       />
 
       <div className="p-4">
@@ -60,7 +83,7 @@ export default function ProdutoCard({
           <h3 className="font-display line-clamp-2 font-bold text-ink">
             {produto.nome}
           </h3>
-          {produto.em_destaque && (
+          {produto.em_destaque && !ocultarDestaque && (
             <span className="shrink-0 rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
               Destaque
             </span>
@@ -96,8 +119,8 @@ export default function ProdutoCard({
           </ul>
         )}
 
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="font-display text-lg font-bold text-ink">
+        <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span className="numerico font-display text-lg font-bold tracking-tight text-ink">
             {temOpcoes && (
               <span className="mr-1 font-sans text-xs font-normal text-ink-faint">
                 a partir de
@@ -105,7 +128,7 @@ export default function ProdutoCard({
             )}
             {produto.preco_promocional ? (
               <>
-                <span className="mr-1.5 font-sans text-xs font-normal text-ink-faint line-through">
+                <span className="numerico mr-1.5 font-sans text-xs font-normal text-ink-faint line-through">
                   {formatarPreco(produto.preco)}
                 </span>
                 {formatarPreco(produto.preco_promocional)}
@@ -115,14 +138,14 @@ export default function ProdutoCard({
             )}
           </span>
           {lojaFechada ? (
-            <span className="shrink-0 rounded-md bg-surface-2 px-3 py-1.5 text-sm font-medium text-ink-muted">
+            <span className="rounded-md bg-surface-2 px-3 py-1.5 text-center text-sm font-medium text-ink-muted">
               Loja fechada
             </span>
           ) : (
             <motion.button
               whileTap={TOQUE_BOTAO}
               onClick={lidarComClique}
-              className={`${BOTAO_PRIMARIO} py-1.5 text-sm`}
+              className={`${BOTAO_PRIMARIO} w-full justify-center py-1.5 text-sm sm:w-auto`}
             >
               {adicionado
                 ? "Adicionado ✓"

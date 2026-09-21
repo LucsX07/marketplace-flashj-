@@ -46,6 +46,17 @@ num dos dois.
 - `brand`, `brand-hover`, `brand-tint`, `on-brand`
 - `warn`, `warn-tint`, `on-warn`
 
+**Grafite** — `graphite`, `on-graphite`, `on-graphite-muted`
+
+O bloco escuro que ancora a página. Sem ele tudo flutuava no bege claro e a
+tela ficava sem peso. Tem dois usos, e só esses dois:
+
+1. A faixa do topo da home, onde ficam a cidade e a busca.
+2. O lugar de uma foto que ainda não existe — ver "Quando não há imagem".
+
+Texto secundário sobre grafite é tingido do próprio tom (`on-graphite-muted`),
+nunca cinza puro.
+
 ### Os tokens `on-*` existem por causa de contraste
 
 `on-brand` e `on-warn` são a cor do texto **em cima** dessas cores, e os
@@ -58,15 +69,22 @@ abaixo do mínimo legível (4,5:1). Com o tom escuro, sobe pra 5,3:1.
 
 ## 3. Profundidade
 
-Três níveis, só de sombra — nunca de brilho:
+**Elevação se declara uma vez: ou borda, ou sombra. Nunca as duas.**
 
-- `--shadow-card` — todo cartão em repouso
+Uma linha de 1px por baixo de uma sombra larga lê como cartão fantasma, não
+como profundidade. Por isso são duas peças diferentes:
+
+- `CARTAO` — objeto (produto, loja, pedido): superfície + sombra, sem borda
+- `CARTAO_PLANO` — painel que agrupa (formulário, bloco de dados): borda, sem sombra
+
+Os três níveis de sombra:
+
+- `--shadow-card` — cartão em repouso
 - `--shadow-card-hover` — cartão clicável sob o cursor
 - `--shadow-modal` — o que flutua sobre o resto
 
-No escuro as sombras são quase imperceptíveis de propósito: sombra preta
-sobre fundo escuro não aparece. Lá a profundidade vem do contraste entre
-`surface` e `surface-2`.
+No escuro a sombra preta quase não aparece, e quem separa é o degrau entre
+`surface` e `bg`. Por isso o `CARTAO` funciona nos dois temas sem borda.
 
 ## 4. Classes prontas (`lib/ui.js`)
 
@@ -77,8 +95,10 @@ sobre fundo escuro não aparece. Lá a profundidade vem do contraste entre
 | `BOTAO_DESTRUTIVO` | confirmar algo que não dá pra desfazer |
 | `LINK_MARCA` | link em verde dentro de texto |
 | `CAMPO` | qualquer input ou select |
-| `CARTAO` | bloco de conteúdo |
+| `CARTAO` | objeto numa lista ou grade — sombra, sem borda |
+| `CARTAO_PLANO` | painel que agrupa conteúdo — borda, sem sombra |
 | `CARTAO_INTERATIVO` | cartão que é link ou botão (levanta no hover) |
+| `BLOCO_GRAFITE` | faixa escura que ancora a página |
 
 Precisou de um botão? Use a constante. Se ela não serve, o certo é
 melhorar a constante — não escrever classes soltas no componente, senão em
@@ -133,3 +153,41 @@ errado esperando pra acontecer.
 A maior parte do uso é no celular. Layout começa em uma coluna e cresce com
 `sm:`/`md:`. Alvo de toque confortável, nada de ação importante encostada
 na borda inferior (a barra de navegação mora lá).
+
+## 10. Quando não há imagem
+
+Um marketplace é carregado por foto. Enquanto as fotos não chegam, o espaço
+**não** vira uma caixa cinza com um logo no meio: vira um bloco de grafite com
+a inicial do nome em tipo grande (`components/ImagemComPlaceholder.js`).
+
+A diferença não é estética, é de leitura. Tela após tela de retângulo cinza
+idêntico faz o app parecer inacabado — era a maior causa isolada da sensação
+de "simples demais". A inicial muda a cada loja e a cada produto, então a
+grade ganha ritmo, e a ausência de foto lê como escolha em vez de buraco.
+
+## 11. O que não se faz aqui
+
+Regras que já custaram caro uma vez:
+
+- **Nada de rótulo em maiúsculo acima de um título.** O título carrega o
+  próprio peso; o rótulo atrasa a informação que importa e faz todo card
+  começar igual. A categoria da loja é metadado, e vive depois do nome.
+- **Nada de grade ou textura decorativa de fundo.** Grade pede uma tela de
+  desenho, um mapa ou uma planta por baixo. Em estado vazio era só enfeite.
+- **Nada de glifo unicode no lugar de ícone.** `✓` herda a fonte do sistema:
+  muda de forma conforme o aparelho e nunca alinha. Ícone é desenhado.
+- **Nada de seção que não enche uma linha.** Agrupar por categoria numa
+  cidade com uma loja por ramo produzia um título seguido de um card
+  solitário. Quando houver volume, a resposta é filtro, não seção.
+- **Raio de card fica em 12–16px.** Abaixo disso a peça lê como caixa de
+  formulário, não como objeto.
+
+## 12. As superfícies que o navegador desenha
+
+Seleção de texto, cursor, anel de foco e barra de rolagem vêm com o padrão do
+sistema e não pertencem a design system nenhum. Todas saem da paleta, em
+`app/globals.css`. É barato e é o que separa uma tela construída de uma tela
+montada.
+
+Preço e quantidade usam a classe `.numerico` (numerais tabulares), senão os
+valores dançam no eixo vertical dentro de uma lista.

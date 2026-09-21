@@ -38,11 +38,10 @@ export default function ResultadosDaBusca({
         animate={ITEM_ENTRADA.visivel}
         className="relative mt-8 overflow-hidden rounded-md border border-line bg-surface p-10 text-center"
       >
-        <div className="grid-texture pointer-events-none absolute inset-0" />
-        <p className="relative font-medium text-ink">
+        <p className="font-medium text-ink">
           Nada encontrado para “{termo}”.
         </p>
-        <p className="relative mt-1 text-sm text-ink-muted">
+        <p className="mt-1 text-sm text-ink-muted">
           Tente outra palavra, ou veja as lojas da sua cidade abaixo.
         </p>
       </motion.div>
