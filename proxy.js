@@ -8,7 +8,10 @@ export async function proxy(request) {
 
   // Sem credenciais do Supabase ainda (.env.local não preenchido), deixa a
   // página seguir — ela mesma vai mostrar um aviso claro de configuração.
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
     return resposta;
   }
 
@@ -21,14 +24,16 @@ export async function proxy(request) {
           return request.cookies.getAll();
         },
         setAll(cookiesParaSetar) {
-          cookiesParaSetar.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesParaSetar.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
           resposta = NextResponse.next({ request });
           cookiesParaSetar.forEach(({ name, value, options }) =>
-            resposta.cookies.set(name, value, options)
+            resposta.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const {
@@ -52,6 +57,19 @@ export async function proxy(request) {
     if (usuario?.tipo !== "comerciante" && usuario?.tipo !== "administrador") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    // A área de administração é mais restrita que o resto do painel: um
+    // comerciante comum passa pela checagem acima, mas não entra aqui. A
+    // página também confere por conta própria, e as policies do banco são a
+    // última palavra — esta é só a primeira porta.
+    if (
+      request.nextUrl.pathname.startsWith("/painel/admin") &&
+      usuario?.tipo !== "administrador"
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/painel";
       return NextResponse.redirect(url);
     }
   }

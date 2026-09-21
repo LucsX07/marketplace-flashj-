@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { buscarMeuEstabelecimento } from "@/lib/estabelecimentos";
-import { listarCategorias } from "@/lib/categorias";
+import { listarCategorias, souAdministrador } from "@/lib/categorias";
 import { listarTodosProdutosDoEstabelecimento } from "@/lib/produtos";
 import { resumoDoDia } from "@/lib/pedidos";
 import { criarEstabelecimentoAutomatico } from "@/lib/actions/estabelecimentos";
@@ -52,9 +52,10 @@ export default async function PainelInicial() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const [{ pedidosHoje, receitaHoje }, produtos] = await Promise.all([
+  const [{ pedidosHoje, receitaHoje }, produtos, ehAdmin] = await Promise.all([
     resumoDoDia(estabelecimento.id),
     listarTodosProdutosDoEstabelecimento(estabelecimento.id),
+    souAdministrador(),
   ]);
 
   // Os números do dia só fazem sentido depois que a loja está de pé. Antes
