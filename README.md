@@ -145,3 +145,19 @@ valores.
 Só serve para quem vem comprar. O cadastro de comerciante pede telefone, nome
 da loja, cidade e categoria, que a conta Google não tem — por isso o botão
 some quando se escolhe "Vender".
+
+## Testar com um grupo (sala de aula, feira, demonstração)
+
+Por padrão o Supabase exige confirmação de e-mail: quem se cadastra recebe
+um link e só entra depois de clicar. Isso é o certo pro dia a dia, mas trava
+uma demonstração ao vivo — ninguém vai parar pra abrir a caixa de entrada no
+meio da aula.
+
+Para um teste em grupo, desligue temporariamente em **Supabase →
+Authentication → Sign In / Providers → Email → Confirm email**. Aí o cadastro
+já entra direto, e o app se ajusta sozinho: a action `cadastrar` olha se veio
+sessão e, se veio, leva a pessoa pra dentro em vez de mandar conferir o
+e-mail. Não precisa mexer em código nas duas situações.
+
+Lembre de religar depois. Com a confirmação desligada, qualquer um cria conta
+com um e-mail que não é dele.
