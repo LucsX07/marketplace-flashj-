@@ -30,7 +30,10 @@ function tocarAviso() {
     oscilador.frequency.value = 880;
     volume.gain.setValueAtTime(0.0001, contexto.currentTime);
     volume.gain.exponentialRampToValueAtTime(0.2, contexto.currentTime + 0.02);
-    volume.gain.exponentialRampToValueAtTime(0.0001, contexto.currentTime + 0.35);
+    volume.gain.exponentialRampToValueAtTime(
+      0.0001,
+      contexto.currentTime + 0.35,
+    );
     oscilador.start();
     oscilador.stop(contexto.currentTime + 0.36);
     oscilador.onended = () => contexto.close();
@@ -65,7 +68,7 @@ function useEscutarPedidos(estabelecimentoId) {
           setNovos((atual) => atual + 1);
           tocarAviso();
           router.refresh();
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -75,7 +78,7 @@ function useEscutarPedidos(estabelecimentoId) {
           table: "pedidos",
           filter: `estabelecimento_id=eq.${estabelecimentoId}`,
         },
-        () => router.refresh()
+        () => router.refresh(),
       )
       .subscribe();
 
@@ -89,22 +92,32 @@ function useEscutarPedidos(estabelecimentoId) {
 
 export default function ListaPedidosPainel({ pedidos, estabelecimentoId }) {
   const [versoes, setVersoes] = useState({});
+  const [erro, setErro] = useState(null);
   const [pendente, iniciarTransicao] = useTransition();
   const { novos, limparNovos } = useEscutarPedidos(estabelecimentoId);
 
   function mudarStatus(id, status) {
+    setErro(null);
     iniciarTransicao(async () => {
       const resultado = await atualizarStatusPedido(id, status);
-      if (!resultado.erro) {
-        setVersoes((atual) => ({ ...atual, [id]: (atual[id] || 0) + 1 }));
+
+      if (resultado.erro) {
+        // Antes o erro era descartado e o botão simplesmente não fazia nada.
+        // Com o gatilho de sequência no banco isso virou caso real: dois
+        // aparelhos no mesmo pedido, ou a tela desatualizada.
+        setErro(resultado.erro);
+        return;
       }
+
+      setVersoes((atual) => ({ ...atual, [id]: (atual[id] || 0) + 1 }));
     });
   }
 
   if (pedidos.length === 0) {
     return (
       <p className="animate-entrada mt-4 text-ink-muted">
-        Nenhum pedido ainda. Faça um pedido de teste como consumidor para ver aqui.
+        Nenhum pedido ainda. Faça um pedido de teste como consumidor para ver
+        aqui.
       </p>
     );
   }
@@ -118,18 +131,31 @@ export default function ListaPedidosPainel({ pedidos, estabelecimentoId }) {
           className="animate-entrada mt-4 flex w-full items-center justify-between rounded-md border border-brand bg-brand-tint px-4 py-3 text-sm font-medium text-brand"
         >
           <span>
-            {novos === 1 ? "Chegou 1 pedido novo" : `Chegaram ${novos} pedidos novos`} — já está na
-            lista abaixo.
+            {novos === 1
+              ? "Chegou 1 pedido novo"
+              : `Chegaram ${novos} pedidos novos`}{" "}
+            — já está na lista abaixo.
           </span>
           <span className="text-xs text-ink-faint">dispensar</span>
         </button>
+      )}
+
+      {erro && (
+        <p
+          role="alert"
+          className="animate-entrada mt-4 rounded-md border border-warn bg-warn-tint p-3 text-sm text-warn"
+        >
+          {erro}
+        </p>
       )}
 
       <ul className="stagger mt-6 space-y-4">
         {pedidos.map((pedido) => (
           <li key={pedido.id} className={`${CARTAO} animate-entrada p-4`}>
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-ink">Pedido #{pedido.id.slice(0, 8)}</span>
+              <span className="font-semibold text-ink">
+                Pedido #{pedido.id.slice(0, 8)}
+              </span>
               <StatusBadge
                 key={`${pedido.id}-${versoes[pedido.id] || 0}`}
                 status={pedido.status}
@@ -147,13 +173,19 @@ export default function ListaPedidosPainel({ pedidos, estabelecimentoId }) {
                   {item.item_pedido_opcoes?.length > 0 && (
                     <span className="text-xs text-ink-faint">
                       {" "}
-                      ({item.item_pedido_opcoes.map((opcao) => opcao.nome_valor).join(", ")})
+                      (
+                      {item.item_pedido_opcoes
+                        .map((opcao) => opcao.nome_valor)
+                        .join(", ")}
+                      )
                     </span>
                   )}
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-sm font-medium text-ink">{formatarPreco(pedido.total)}</p>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {formatarPreco(pedido.total)}
+            </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               {pedido.status === STATUS_PEDIDO.PENDENTE && (
@@ -168,7 +200,11 @@ export default function ListaPedidosPainel({ pedidos, estabelecimentoId }) {
                   <button
                     disabled={pendente}
                     onClick={() => {
-                      if (confirm("Recusar este pedido? Essa ação não pode ser desfeita.")) {
+                      if (
+                        confirm(
+                          "Recusar este pedido? Essa ação não pode ser desfeita.",
+                        )
+                      ) {
                         mudarStatus(pedido.id, STATUS_PEDIDO.RECUSADO);
                       }
                     }}
@@ -181,7 +217,9 @@ export default function ListaPedidosPainel({ pedidos, estabelecimentoId }) {
               {PROXIMO_STATUS[pedido.status] && (
                 <button
                   disabled={pendente}
-                  onClick={() => mudarStatus(pedido.id, PROXIMO_STATUS[pedido.status])}
+                  onClick={() =>
+                    mudarStatus(pedido.id, PROXIMO_STATUS[pedido.status])
+                  }
                   className={`${BOTAO_SECUNDARIO} py-1.5 text-sm`}
                 >
                   Marcar como {STATUS_LABEL[PROXIMO_STATUS[pedido.status]]}

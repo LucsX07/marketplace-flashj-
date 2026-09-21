@@ -138,14 +138,20 @@ create table public.pagamentos (
 create function public.lidar_novo_usuario()
 returns trigger
 language plpgsql
-security definer set search_path = public
+security definer set search_path = ''
 as $$
 begin
+  -- O tipo nunca é copiado direto do que veio no cadastro: só 'comerciante'
+  -- é aceito, todo o resto vira 'consumidor'. Sem isso, quem soubesse montar
+  -- a chamada de cadastro na mão poderia pedir 'administrador' e se tornar
+  -- admin sozinho.
   insert into public.usuarios (id, tipo, nome, telefone)
   values (
     new.id,
-    coalesce((new.raw_user_meta_data ->> 'tipo')::tipo_usuario, 'consumidor'),
-    coalesce(new.raw_user_meta_data ->> 'nome', new.email),
+    case when new.raw_user_meta_data ->> 'tipo' = 'comerciante'
+      then 'comerciante'::public.tipo_usuario
+      else 'consumidor'::public.tipo_usuario end,
+    coalesce(nullif(trim(new.raw_user_meta_data ->> 'nome'), ''), new.email, 'Usuário'),
     new.raw_user_meta_data ->> 'telefone'
   );
   return new;
@@ -610,3 +616,113 @@ $$;
 
 revoke all on function public.excluir_minha_conta() from public, anon;
 grant execute on function public.excluir_minha_conta() to authenticated;
+
+-- ============================================================
+-- Permissão fina nas tabelas com dado de pessoa.
+--
+-- Antes, anon e authenticated tinham DELETE/INSERT/SELECT/UPDATE em tudo, e
+-- quem segurava a porta era só a RLS. Isso funciona até alguém achar uma
+-- brecha numa policy. Aqui a porta é fechada antes: quem está logado só lê
+-- essas três tabelas e só consegue escrever nas colunas que o app realmente
+-- precisa mudar. Visitante não alcança nenhuma das três.
+--
+-- Criar pedido continua funcionando porque public.criar_pedido é security
+-- definer: ela roda como dona das tabelas, não como quem chamou.
+-- ============================================================
+revoke all on public.usuarios, public.pedidos, public.pagamentos from public, anon, authenticated;
+grant select on public.usuarios, public.pedidos, public.pagamentos to authenticated;
+grant update (nome, telefone) on public.usuarios to authenticated;
+grant update (status, atualizado_em) on public.pedidos to authenticated;
+grant update (status, atualizado_em) on public.pagamentos to authenticated;
+
+-- RLS não cobre TRUNCATE, e o app não precisa de nada disso.
+revoke truncate, references, trigger on all tables in schema public from public, anon, authenticated;
+
+-- ============================================================
+-- A sequência de situações do pedido vale no banco, não só na tela.
+--
+-- O painel só mostra o botão do próximo passo, mas quem chamasse a API
+-- direto podia pular de 'pendente' pra 'concluido' — ou reabrir um pedido
+-- recusado. A mensagem do raise é escrita pro comerciante ler: a action
+-- repassa ela direto quando o código é P0001.
+-- ============================================================
+create or replace function public.validar_transicao_pedido()
+returns trigger language plpgsql set search_path = ''
+as $$
+begin
+  if new.status is distinct from old.status and not (
+    (old.status = 'pendente' and new.status in ('aceito', 'recusado'))
+    or (old.status = 'aceito' and new.status = 'em_preparo')
+    or (old.status = 'em_preparo' and new.status = 'pronto')
+    or (old.status = 'pronto' and new.status = 'concluido')
+  ) then
+    raise exception 'O pedido mudou de situação. Atualize a página e tente novamente.';
+  end if;
+  new.atualizado_em := now();
+  return new;
+end;
+$$;
+create trigger validar_transicao_pedido
+before update on public.pedidos
+for each row execute function public.validar_transicao_pedido();
+revoke all on function public.validar_transicao_pedido() from public, anon, authenticated;
+
+-- Pagamento na retirada só pode ser marcado como pago quando o pedido já
+-- está pronto. Sem isso dava pra dar baixa num pedido que nem foi preparado.
+create or replace function public.validar_pagamento_retirada()
+returns trigger language plpgsql set search_path = ''
+as $$
+declare v_status public.status_pedido;
+begin
+  if new.status is distinct from old.status then
+    if old.metodo <> 'retirada' or old.status <> 'pendente' or new.status <> 'aprovado' then
+      raise exception 'Esta alteração de pagamento não é permitida.';
+    end if;
+    select status into v_status from public.pedidos where id = old.pedido_id;
+    if v_status is null or v_status not in ('pronto', 'concluido') then
+      raise exception 'Confirme o pagamento quando o pedido estiver pronto para retirada.';
+    end if;
+  end if;
+  new.atualizado_em := now();
+  return new;
+end;
+$$;
+create trigger validar_pagamento_retirada
+before update on public.pagamentos
+for each row execute function public.validar_pagamento_retirada();
+revoke all on function public.validar_pagamento_retirada() from public, anon, authenticated;
+
+-- ============================================================
+-- Contato do cliente no painel, sem abrir a tabela de perfis.
+--
+-- A policy de `usuarios` é "cada um vê só o próprio perfil". Isso é certo,
+-- mas fazia o painel mostrar pedido sem saber de quem era: o join voltava
+-- vazio. Alargar a policy pra comerciante ver perfis resolveria e abriria a
+-- tabela de gente inteira pra quem tem loja.
+--
+-- Esta função devolve nome e telefone só de quem pediu naquela loja, confere
+-- o dono pelo auth.uid() aqui dentro e não recebe id de usuário nenhum por
+-- parâmetro. Usada em lib/pedidos.js.
+-- ============================================================
+create or replace function public.contatos_pedidos_da_loja(p_estabelecimento_id uuid)
+returns table (pedido_id uuid, nome text, telefone text)
+language sql stable security definer set search_path = ''
+as $$
+  select p.id, u.nome, u.telefone
+  from public.pedidos p
+  join public.estabelecimentos e on e.id = p.estabelecimento_id
+  join public.usuarios u on u.id = p.consumidor_id
+  where e.id = p_estabelecimento_id
+    and auth.uid() is not null
+    and e.dono_id = auth.uid();
+$$;
+revoke all on function public.contatos_pedidos_da_loja(uuid) from public, anon;
+grant execute on function public.contatos_pedidos_da_loja(uuid) to authenticated;
+
+-- Postgres não cria índice sozinho em chave estrangeira. Estas são as
+-- relações que as policies e o painel percorrem toda hora.
+create index if not exists estabelecimentos_dono_idx on public.estabelecimentos(dono_id);
+create index if not exists pedidos_loja_data_idx on public.pedidos(estabelecimento_id, criado_em desc);
+create index if not exists pedidos_consumidor_data_idx on public.pedidos(consumidor_id, criado_em desc);
+create index if not exists pagamentos_pedido_idx on public.pagamentos(pedido_id);
+create index if not exists itens_pedido_pedido_idx on public.itens_pedido(pedido_id);
